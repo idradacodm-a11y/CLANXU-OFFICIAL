@@ -56,8 +56,10 @@ io.on('connection', (socket) => {
   socket.on('approve-user', (id) => {
     if (!admins.includes(socket.id)) return;
     const t = io.sockets.sockets.get(id);
+    const uname = pendingUsers[id] || 'Member';
     if (t) {
-      users[id] = { username: pendingUsers[id] || 'Member', rank: 'Rookie', uid: 'N/A', screenshot: '', role: 'Member' };
+      if (!users[uname]) users[uname] = {};
+      users[uname] = { username: uname, rank: 'Rookie', uid: 'N/A', screenshot: '', role: 'Member' };
       t.emit('approved');
       delete pendingUsers[id];
       io.emit('users-update', Object.values(users));
@@ -90,8 +92,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('save-profile', (data) => {
-    if (!users[socket.id]) users[socket.id] = {};
-    users[socket.id] = { ...users[socket.id], ...data };
+    if (!data.username) return socket.emit('profile-saved');
+    if (!users[data.username]) users[data.username] = {};
+    users[data.username] = { ...users[data.username], ...data };
     socket.emit('profile-saved');
     io.emit('users-update', Object.values(users));
   });
@@ -162,9 +165,10 @@ io.on('connection', (socket) => {
 function makeAdmin(socket, username) {
   if (!admins.includes(socket.id)) admins.push(socket.id);
   socket.join('admin-room');
-  if (!users[socket.id]) users[socket.id] = { username: username || 'Admin', rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin' };
-  users[socket.id].rank = 'ClanXU Elite';
-  users[socket.id].role = 'Admin';
+  const uname = username || 'Admin';
+  if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin' };
+  users[uname].rank = 'ClanXU Elite';
+  users[uname].role = 'Admin';
   socket.emit('admin-approved');
   socket.emit('mailbox-data', getMailboxData());
   io.emit('users-update', Object.values(users));
