@@ -161,23 +161,50 @@ let myName = 'Guest';
 let mediaRec, chunks = [];
 
 // Initial flow
-const key = prompt('Enter Clan Key:');
-socket.emit('check-key', key);
+// SAVE STATE
+const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
 
-socket.on('key-result', ok => {
-  if (!ok) { alert('Mali ang Clan Key!'); location.reload(); return; }
-  const isAdminAttempt = confirm('Admin ka ba? Pindutin OK kung ikaw ang admin.');
-  if (isAdminAttempt) {
-    const pwd = prompt('Admin Password:');
-    const name = prompt('Pangalan mo:');
-    myName = name || 'Admin';
-    socket.emit('admin-login', { password: pwd, username: myName });
-  } else {
-    const name = prompt('Pangalan mo:');
-    myName = name || 'Member';
-    socket.emit('request-join', myName);
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
   }
-});
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
+  const key = prompt('[ClanXU] Enter Clan Key:');
+  socket.emit('check-key', key);
+  socket.on('key-result', ok => {
+    if (!ok) { alert('❌ Invalid Key'); location.reload(); return; }
+    const isAdminAttempt = confirm('Are you the ADMIN?');
+    if (isAdminAttempt) {
+      const pwd = prompt('Admin Password:');
+      const name = prompt('Your IGN:');
+      myName = name || 'Admin';
+      localStorage.setItem('clanx_key', key);
+      localStorage.setItem('clanx_name', myName);
+      localStorage.setItem('clanx_admin', 'true');
+      socket.emit('admin-login', { password: pwd, username: myName });
+    } else {
+      const name = prompt('Your IGN:');
+      myName = name || 'Recruit';
+      localStorage.setItem('clanx_key', key);
+      localStorage.setItem('clanx_name', myName);
+      localStorage.setItem('clanx_admin', 'false');
+      socket.emit('request-join', myName);
+    }
+  });
+}
 
 socket.on('admin-login-fail', m => { alert(m); location.reload(); });
 socket.on('admin-approved', () => {
