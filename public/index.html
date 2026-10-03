@@ -79,49 +79,21 @@ audio { width: 100%; margin-top: 5px; }
   <div class="card">
     <h3>👤 IYONG PROFILE</h3>
     <div style="text-align:center; margin-bottom:15px">
-      <img id="myAvatar" class="avatar" src="https://via.placeholder.com/60" alt="">
-      <p id="myRank" style="color:#ffd700; margin-top:8px; font-weight:bold"></p>
+      <img id="myAvatar" class="avatar" src="https://via.placeholder.com/80" alt="">
+      <p id="myIGN" style="color:#ffd700; font-weight:bold; font-size:18px; margin-top:8px"></p>
+      <p id="myRank" style="color:#00adb5; font-size:14px"></p>
     </div>
-    <label>Username:</label>
-    <input type="text" id="pUsername" placeholder="Pangalan mo">
     <label>UID (CODM):</label>
-    <input type="text" id="pUid" placeholder="UID mo">
+    <input type="text" id="pUid" placeholder="Ilagay ang UID">
     <label>Rank:</label>
     <select id="pRank">
       <option>Rookie</option><option>Veteran</option><option>Elite</option>
       <option>Pro</option><option>Master</option><option>Grandmaster</option>
       <option>Legendary</option><option>ClanXU Elite</option>
     </select>
-    <label>Collection Screenshot:</label>
-    <input type="file" id="pFile" accept="image/*">
-    <button style="width:100%" onclick="saveProfile()">💾 I-SAVE</button>
-  </div>
-</div>
-
-<div id="content-tryout" class="content">
-  <div class="card">
-    <h3>⚔️ TRY-OUT APPLICATION</h3>
-    <label>Username:</label>
-    <input type="text" id="tUser" placeholder="IGN mo">
-    <label>UID:</label>
-    <input type="text" id="tUid" placeholder="CODM UID">
-    <label>Rank:</label>
-    <input type="text" id="tRank" placeholder="Current rank mo">
-    <label>Bakit gusto mong sumali?</label>
-    <textarea id="tMsg" rows="3" placeholder="Reason..."></textarea>
-    <button style="width:100%" onclick="submitTryout()">📩 SUBMIT</button>
-  </div>
-</div>
-
-<div id="content-mailbox" class="content">
-  <div class="card">
-    <h3>📬 MAILBOX (Admin Only)</h3>
-    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
-    <div id="mailJoinList"><p style="color:#666">Walang request.</p></div>
-    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
-    <div id="mailAdminList"><p style="color:#666">Walang request.</p></div>
-    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
-    <div id="mailTryoutList"><p style="color:#666">Walang try-out.</p></div>
+    <label>Collection Screenshot (link):</label>
+    <input type="text" id="pShot" placeholder="Paste Imgur/Discord link">
+    <button style="width:100%;margin-top:10px" onclick="saveProfile()">💾 I-SAVE</button>
   </div>
 </div>
 
@@ -172,6 +144,7 @@ if (savedKey && savedName) {
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'true');
       socket.emit('admin-login', { password: pwd, username: myName });
+      if(document.getElementById('myIGN')) document.getElementById('myIGN').textContent = myName;
     } else {
       const name = prompt('Your IGN:');
       myName = name || 'Recruit';
@@ -179,6 +152,7 @@ if (savedKey && savedName) {
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'false');
       socket.emit('request-join', { username: myName, uid: 'N/A', rank: 'Rookie', screenshot: '' });
+      if(document.getElementById('myIGN')) document.getElementById('myIGN').textContent = myName;
     }
   });
 }
@@ -269,15 +243,12 @@ function postAnnounce() {
 }
 
 function saveProfile() {
-  const f = document.getElementById('pFile').files[0];
-  const doSave = (s) => socket.emit('save-profile', {
-    username: document.getElementById('pUsername').value,
+  socket.emit('save-profile', {
+    username: myName,
     uid: document.getElementById('pUid').value,
     rank: document.getElementById('pRank').value,
-    screenshot: s || ''
+    screenshot: document.getElementById('pShot').value
   });
-  if (f) { const r = new FileReader(); r.onloadend = () => doSave(r.result); r.readAsDataURL(f); }
-  else doSave('');
 }
 socket.on('profile-saved', () => alert('Profile saved!'));
 
@@ -286,11 +257,7 @@ socket.on('users-update', users => {
   const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
   const sorted = [...users].sort((a,b) => order.indexOf(a.rank) - order.indexOf(b.rank));
   const lb = document.getElementById('leaderboard');
-  if (sorted.length === 0) { 
-    lb.innerHTML = '<p style="color:#666">Walang members.</p>'; 
-    return; 
-  }
-  
+  if (sorted.length === 0) { lb.innerHTML = '<p style="color:#666">Walang members.</p>'; return; }
   lb.innerHTML = sorted.map((u,i) => {
     const cls = u.rank.replace(/\s+/g,'');
     return `<div class="lb-row" onclick="showMemberInfo('${escapeHtml(u.username)}')" style="cursor:pointer">
@@ -299,6 +266,68 @@ socket.on('users-update', users => {
     </div>`;
   }).join('');
 });
+
+function showMemberInfo(username) {
+  const u = (window.currentUsers || []).find(x => x.username === username);
+  if (!u) return;
+  const old = document.getElementById('memberModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'memberModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `<div style="background:#111;border:2px solid #ff2a2a;border-radius:10px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:15px">
+      <h2 style="color:#ffd700;margin:0">${escapeHtml(u.username)}</h2>
+      <p style="color:#00adb5;font-size:14px;margin-top:5px">${u.rank}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px">UID</p>
+      <p style="color:#fff;font-size:14px;font-weight:bold">${escapeHtml(u.uid||'N/A')}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px">RANK</p>
+      <p style="color:#fff;font-size:14px;font-weight:bold">${escapeHtml(u.rank||'N/A')}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px;margin-bottom:8px">SCREENSHOT</p>
+      ${u.screenshot ? `<img src="${u.screenshot}" style="width:100%;border-radius:6px;border:2px solid #ff2a2a" onerror="this.outerHTML='<p style=color:#666;font-size:12px>Walang screenshot.</p>'">` : '<p style="color:#666;font-size:12px">Walang screenshot.</p>'}
+    </div>
+    <button onclick="document.getElementById('memberModal').remove()" style="width:100%;margin-top:10px">CLOSE</button>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function showMemberInfo(username) {
+  const u = (window.currentUsers || []).find(x => x.username === username);
+  if (!u) return;
+  const old = document.getElementById('memberModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'memberModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `<div style="background:#111;border:2px solid #ff2a2a;border-radius:10px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:15px">
+      <h2 style="color:#ffd700;margin:0">${escapeHtml(u.username)}</h2>
+      <p style="color:#00adb5;font-size:14px;margin-top:5px">${u.rank}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px">UID</p>
+      <p style="color:#fff;font-size:14px;font-weight:bold">${escapeHtml(u.uid||'N/A')}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px">RANK</p>
+      <p style="color:#fff;font-size:14px;font-weight:bold">${escapeHtml(u.rank||'N/A')}</p>
+    </div>
+    <div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px">
+      <p style="color:#888;font-size:11px;margin-bottom:8px">SCREENSHOT</p>
+      ${u.screenshot ? `<img src="${u.screenshot}" style="width:100%;border-radius:6px;border:2px solid #ff2a2a" onerror="this.outerHTML='<p style=color:#666;font-size:12px>Walang screenshot.</p>'">` : '<p style="color:#666;font-size:12px">Walang screenshot.</p>'}
+    </div>
+    <button onclick="document.getElementById('memberModal').remove()" style="width:100%;margin-top:10px">CLOSE</button>
+  </div>`;
+  document.body.appendChild(modal);
+}
 
 function showMemberInfo(username) {
   const u = window.currentUsers.find(x => x.username === username);
@@ -389,6 +418,22 @@ function renderMailbox(data) {
       <button onclick="socket.emit('approve-tryout',${r.id})" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
       <button onclick="socket.emit('deny-tryout',${r.id})" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
     </div>`).join('');
+}
+
+
+function fillProfileFields() {
+  const ign = document.getElementById('myIGN');
+  const rank = document.getElementById('myRank');
+  if (ign) ign.textContent = myName;
+  if (rank && window.currentUsers) {
+    const me = window.currentUsers.find(u => u.username === myName);
+    if (me) {
+      if (rank) rank.textContent = me.rank || '';
+      if (document.getElementById('pUid')) document.getElementById('pUid').value = me.uid || '';
+      if (document.getElementById('pRank')) document.getElementById('pRank').value = me.rank || 'Rookie';
+      if (document.getElementById('pShot')) document.getElementById('pShot').value = me.screenshot || '';
+    }
+  }
 }
 
 function switchTab(name, ev) {

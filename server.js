@@ -113,9 +113,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('save-profile', (data) => {
-    if (!data.username) return socket.emit('profile-saved');
-    if (!users[data.username]) users[data.username] = {};
-    users[data.username] = { ...users[data.username], ...data };
+    const uname = data.username;
+    if (!uname) return socket.emit('profile-saved');
+    if (!users[uname]) users[uname] = { username: uname, rank: 'Rookie', uid: 'N/A', screenshot: '', role: 'Member' };
+    if (data.uid) users[uname].uid = data.uid;
+    if (data.rank) users[uname].rank = data.rank;
+    if (data.screenshot) users[uname].screenshot = data.screenshot;
     socket.emit('profile-saved');
     io.emit('users-update', Object.values(users));
   });
