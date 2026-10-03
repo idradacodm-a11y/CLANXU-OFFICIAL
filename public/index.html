@@ -51,6 +51,7 @@ audio { width: 100%; margin-top: 5px; }
 
 <header>
   <h1>CLAN <span>XU</span> OFFICIAL</h1>
+<button onclick="logout()" style="position:absolute;top:10px;right:10px;padding:6px 12px;font-size:10px;background:#333;border:1px solid #ff2a2a;color:#fff;border-radius:4px">LOGOUT</button>
 </header>
 
 <div class="tabs">
@@ -219,6 +220,32 @@ if (savedKey && savedName) {
     else socket.emit('request-join', savedName);
   });
 } else {
+  // === SAVE LOGIN ===
+const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+if (savedKey && savedName) {
+  // AUTO-LOGIN - hindi na tatanungin
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) {
+      socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    } else {
+      socket.emit('request-join', savedName);
+    }
+  });
+} else {
+  // FIRST TIME LOGIN
   const key = prompt('[ClanXU] Enter Clan Key:');
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
@@ -242,11 +269,6 @@ if (savedKey && savedName) {
     }
   });
 }
-socket.on('new-admin-request', d => {
-  if (!isAdmin) return;
-  if (confirm('Gawing admin si ' + d.username + '?')) socket.emit('approve-admin', d.id);
-  else socket.emit('deny-admin', d.id);
-});
 
 // Chat
 function sendMsg() {
