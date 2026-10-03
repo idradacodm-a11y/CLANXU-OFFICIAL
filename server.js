@@ -19,6 +19,7 @@ let users = {};
 let announcements = [];
 let chatHistory = [];
 let tryouts = [];
+let joinRequests = {};   // <-- IDINAGDAG
 
 const TIERS = {
   "ClanXU Elite": 8000, "Legendary": 7000, "Grandmaster": 6000,

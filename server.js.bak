@@ -36,11 +36,36 @@ function getMailboxData() {
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
 
-  socket.on('request-join', (username) => {
-    pendingUsers[socket.id] = username;
+  socket.on('request-join', (data) => {
+    // data = { username, uid, rank, screenshot }
+    const uname = data.username;
+    
+    // CHECK KUNG EXISTING MEMBER NA
+    const existing = Object.values(users).find(u => u.username === uname);
+    if (existing) {
+      // Kilala na natin siya! Auto-approve, hindi na kailangan ng admin
+      socket.emit('approved');
+      // I-update yung uid/rank/screenshot kung may bago
+      if (data.uid && data.uid !== 'N/A') existing.uid = data.uid;
+      if (data.rank && data.rank !== 'Rookie') existing.rank = data.rank;
+      if (data.screenshot) existing.screenshot = data.screenshot;
+      io.emit('users-update', Object.values(users));
+      return;
+    }
+    
+    // CHECK KUNG NAG-REQUEST NA SIYA (naghihintay pa ng approval)
+    const alreadyPending = Object.values(joinRequests).find(r => r.username === uname);
+    if (alreadyPending) {
+      socket.emit('wait-approval');
+      return;
+    }
+    
+    // BAGONG MEMBER - kailangan ng approval
+    joinRequests[socket.id] = data;
+    pendingUsers[socket.id] = uname;
     socket.emit('wait-approval');
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
-    io.to('admin-room').emit('new-user-request', { id: socket.id, username });
+    io.to('admin-room').emit('new-user-request', { id: socket.id, ...data });
   });
 
   socket.on('admin-login', (data) => {
