@@ -155,7 +155,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     admins = admins.filter(id => id !== socket.id);
     delete pendingUsers[socket.id];
-    delete users[socket.id];
     io.emit('users-update', Object.values(users));
   });
 });
