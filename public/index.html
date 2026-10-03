@@ -202,6 +202,23 @@ if (savedKey && savedName) {
     else socket.emit('request-join', savedName);
   });
 } else {
+  const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) { localStorage.clear(); location.reload(); }
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
   const key = prompt('[ClanXU] Enter Clan Key:');
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
@@ -225,19 +242,6 @@ if (savedKey && savedName) {
     }
   });
 }
-socket.on('wait-admin-approval', () => alert('Naghihintay ng approval mula sa existing admin.'));
-socket.on('admin-denied', () => { alert('Denied ang admin request mo.'); location.reload(); });
-
-socket.on('wait-approval', () => alert('Naghihintay ng approval mula sa admin...'));
-socket.on('approved', () => alert('✅ Approved ka na! Welcome sa clan!'));
-socket.on('denied', () => { alert('❌ Denied.'); location.reload(); });
-
-// Admin receives requests
-socket.on('new-user-request', d => {
-  if (!isAdmin) return;
-  if (confirm('Tanggapin si ' + d.username + '?')) socket.emit('approve-user', d.id);
-  else socket.emit('deny-user', d.id);
-});
 socket.on('new-admin-request', d => {
   if (!isAdmin) return;
   if (confirm('Gawing admin si ' + d.username + '?')) socket.emit('approve-admin', d.id);
@@ -391,6 +395,8 @@ socket.on('initial-data', d => {
     isAdmin = true;
     document.body.classList.add('admin-on');
     document.getElementById('adminTab').style.display = 'block';
+  document.getElementById('mailboxTab').style.display = 'block';
+  socket.emit('get-mailbox');
   }
 });
 
