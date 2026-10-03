@@ -7,7 +7,7 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
 body { background: #0a0a0a; color: #eee; min-height: 100vh; }
-header { background: linear-gradient(90deg, #000, #1a0000); padding: 15px; text-align: center; border-bottom: 3px solid #ff2a2a; box-shadow: 0 0 20px rgba(255,42,42,0.5); }
+header { background: linear-gradient(90deg, #000, #1a0000); padding: 15px; text-align: center; border-bottom: 3px solid #ff2a2a; position: relative; }
 h1 { color: #fff; text-shadow: 0 0 15px #ff2a2a; letter-spacing: 3px; font-size: 22px; }
 h1 span { color: #ffd700; }
 .tabs { display: flex; background: #111; border-bottom: 2px solid #333; overflow-x: auto; }
@@ -21,17 +21,16 @@ h1 span { color: #ffd700; }
 .del-btn { background: #ff2a2a; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; display: none; }
 .admin-on .del-btn { display: inline-block; }
 .controls { display: flex; gap: 6px; }
-input[type=text] { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; font-size: 14px; }
+input[type=text], select, textarea { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; font-size: 14px; }
 button { background: #ff2a2a; color: white; border: none; padding: 12px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
 button:hover { background: #ffd700; color: black; }
 .record-btn { background: #00adb5 !important; }
-.record-btn.recording { background: #ff0000 !important; }
 #announcement { background: #ffd700; color: #000; padding: 12px; border-radius: 6px; margin-bottom: 12px; display: none; font-weight: bold; }
 .card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 12px; }
 .card h3 { color: #ffd700; margin-bottom: 10px; }
-select, textarea { width: 100%; padding: 10px; background: #222; color: white; border: 1px solid #444; border-radius: 6px; margin-bottom: 10px; }
+.lb-row { display: flex; justify-content: space-between; padding: 10px; background: #1a1a1a; margin-bottom: 6px; border-radius: 6px; border-left: 3px solid #ffd700; }
 .tier { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-.tier.ClanXUElite { background: linear-gradient(45deg, #ff2a2a, #ffd700); color: #fff; text-shadow: 1px 1px 2px #000; }
+.tier.ClanXUElite { background: linear-gradient(45deg, #ff2a2a, #ffd700); color: #fff; }
 .tier.Legendary { background: #ff2a2a; color: white; }
 .tier.Grandmaster { background: #ff4500; color: white; }
 .tier.Master { background: #a020f0; color: white; }
@@ -39,11 +38,7 @@ select, textarea { width: 100%; padding: 10px; background: #222; color: white; b
 .tier.Elite { background: #00ced1; color: black; }
 .tier.Veteran { background: #32cd32; color: black; }
 .tier.Rookie { background: #555; color: white; }
-.lb-row { display: flex; justify-content: space-between; padding: 10px; background: #1a1a1a; margin-bottom: 6px; border-radius: 6px; border-left: 3px solid #ffd700; }
-.avatar { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #ff2a2a; object-fit: cover; }
 .tryout-item { background: #1a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #ff2a2a; }
-.tryout-item button { padding: 6px 10px; font-size: 11px; margin-right: 5px; }
-.fb-link { display: block; background: #1877f2; color: white; padding: 15px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; }
 audio { width: 100%; margin-top: 5px; }
 </style>
 </head>
@@ -51,16 +46,17 @@ audio { width: 100%; margin-top: 5px; }
 
 <header>
   <h1>CLAN <span>XU</span> OFFICIAL</h1>
-<button onclick="logout()" style="position:absolute;top:10px;right:10px;padding:6px 12px;font-size:10px;background:#333;border:1px solid #ff2a2a;color:#fff;border-radius:4px">LOGOUT</button>
+  <button onclick="logout()" style="position:absolute;top:10px;right:10px;padding:6px 12px;font-size:10px;background:#333;border:1px solid #ff2a2a">LOGOUT</button>
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('chat', event)">💬 Chat</div>
-  <div class="tab" onclick="switchTab('leaderboard', event)">🏆 Ranking</div>
-  <div class="tab" onclick="switchTab('profile', event)">👤 Profile</div>
-  <div class="tab" onclick="switchTab('tryout', event)">⚔️ Try-out</div>
-  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox <span id="mailCount" style="background:#ff2a2a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
-<div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡️ Admin</div>
+  <div class="tab active" onclick="switchTab('chat',event)">💬 Chat</div>
+  <div class="tab" onclick="switchTab('ranking',event)">🏆 Ranking</div>
+  <div class="tab" onclick="switchTab('profile',event)">👤 Profile</div>
+  <div class="tab" onclick="switchTab('tryout',event)">⚔️ Try-out</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox</div>
+  <div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡️ Admin</div>
+</div>
 
 <div id="content-chat" class="content active">
   <div id="announcement"></div>
@@ -72,7 +68,7 @@ audio { width: 100%; margin-top: 5px; }
   </div>
 </div>
 
-<div id="content-leaderboard" class="content">
+<div id="content-ranking" class="content">
   <div class="card">
     <h3>🏆 CLAN LEADERBOARD</h3>
     <div id="leaderboard"></div>
@@ -92,14 +88,9 @@ audio { width: 100%; margin-top: 5px; }
     <input type="text" id="pUid" placeholder="UID mo">
     <label>Rank:</label>
     <select id="pRank">
-      <option>Rookie</option>
-      <option>Veteran</option>
-      <option>Elite</option>
-      <option>Pro</option>
-      <option>Master</option>
-      <option>Grandmaster</option>
-      <option>Legendary</option>
-      <option>ClanXU Elite</option>
+      <option>Rookie</option><option>Veteran</option><option>Elite</option>
+      <option>Pro</option><option>Master</option><option>Grandmaster</option>
+      <option>Legendary</option><option>ClanXU Elite</option>
     </select>
     <label>Collection Screenshot:</label>
     <input type="file" id="pFile" accept="image/*">
@@ -122,37 +113,26 @@ audio { width: 100%; margin-top: 5px; }
   </div>
 </div>
 
+<div id="content-mailbox" class="content">
+  <div class="card">
+    <h3>📬 MAILBOX (Admin Only)</h3>
+    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
+    <div id="mailJoinList"><p style="color:#666">Walang request.</p></div>
+    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
+    <div id="mailAdminList"><p style="color:#666">Walang request.</p></div>
+    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
+    <div id="mailTryoutList"><p style="color:#666">Walang try-out.</p></div>
+  </div>
+</div>
 
 <div id="content-admin" class="content">
   <div class="card">
     <h3>🛡️ ADMIN PANEL</h3>
     <label>Announcement:</label>
     <input type="text" id="annInput" placeholder="I-type announcement...">
-    <button onclick="postAnnounce()" style="width:100%; margin-bottom:15px">📢 POST</button>
-    <h4 style="color:#ffd700; margin:10px 0">👥 Join Requests</h4>
-    <div id="joinList"></div>
-    <h4 style="color:#ffd700; margin:10px 0">⚔️ Try-outs</h4>
-    <div id="tryoutList"></div>
+    <button onclick="postAnnounce()" style="width:100%">📢 POST</button>
   </div>
 </div>
-
-
-<div id="content-mailbox" class="content">
-  <div class="card">
-    <h3>📬 MAILBOX</h3>
-    <p style="color:#666;font-size:12px;margin-bottom:15px">Ikaw lang ang nakakakita nito. Lahat ng pending requests ay nandito.</p>
-    
-    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
-    <div id="mailJoinList"><p style="color:#666">Wala pang request.</p></div>
-    
-    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
-    <div id="mailAdminList"><p style="color:#666">Wala pang request.</p></div>
-    
-    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
-    <div id="mailTryoutList"><p style="color:#666">Wala pang try-out.</p></div>
-  </div>
-</div>
-
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -161,49 +141,8 @@ let isAdmin = false;
 let myName = 'Guest';
 let mediaRec, chunks = [];
 
-// Initial flow
-// SAVE STATE
+// === SAVE LOGIN ===
 const savedKey = localStorage.getItem('clanx_key');
-const savedName = localStorage.getItem('clanx_name');
-const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
-
-function logout() {
-  if (confirm('Logout ka ba?')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-if (savedKey && savedName) {
-  myName = savedName;
-  socket.emit('check-key', savedKey);
-  socket.on('key-result', ok => {
-    if (!ok) { localStorage.clear(); location.reload(); return; }
-    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    else socket.emit('request-join', savedName);
-  });
-} else {
-  const savedKey = localStorage.getItem('clanx_key');
-const savedName = localStorage.getItem('clanx_name');
-const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
-
-function logout() {
-  if (confirm('Logout ka ba?')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-if (savedKey && savedName) {
-  myName = savedName;
-  socket.emit('check-key', savedKey);
-  socket.on('key-result', ok => {
-    if (!ok) { localStorage.clear(); location.reload(); return; }
-    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    else socket.emit('request-join', savedName);
-  });
-} else {
-  const savedKey = localStorage.getItem('clanx_key');
 const savedName = localStorage.getItem('clanx_name');
 const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
 
@@ -220,32 +159,6 @@ if (savedKey && savedName) {
     else socket.emit('request-join', savedName);
   });
 } else {
-  // === SAVE LOGIN ===
-const savedKey = localStorage.getItem('clanx_key');
-const savedName = localStorage.getItem('clanx_name');
-const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
-
-function logout() {
-  if (confirm('Logout ka ba?')) {
-    localStorage.clear();
-    location.reload();
-  }
-}
-
-if (savedKey && savedName) {
-  // AUTO-LOGIN - hindi na tatanungin
-  myName = savedName;
-  socket.emit('check-key', savedKey);
-  socket.on('key-result', ok => {
-    if (!ok) { localStorage.clear(); location.reload(); return; }
-    if (savedAdmin) {
-      socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    } else {
-      socket.emit('request-join', savedName);
-    }
-  });
-} else {
-  // FIRST TIME LOGIN
   const key = prompt('[ClanXU] Enter Clan Key:');
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
@@ -270,14 +183,37 @@ if (savedKey && savedName) {
   });
 }
 
-// Chat
+socket.on('admin-login-fail', m => { alert(m); location.reload(); });
+socket.on('admin-approved', () => {
+  isAdmin = true;
+  document.body.classList.add('admin-on');
+  document.getElementById('adminTab').style.display = 'block';
+  document.getElementById('mailboxTab').style.display = 'block';
+  socket.emit('get-mailbox');
+});
+socket.on('wait-admin-approval', () => alert('Waiting for admin approval...'));
+socket.on('admin-denied', () => { alert('Admin denied.'); location.reload(); });
+socket.on('wait-approval', () => alert('Waiting for approval...'));
+socket.on('approved', () => alert('Welcome sa clan!'));
+socket.on('denied', () => { alert('Denied.'); location.reload(); });
+
+socket.on('new-user-request', d => {
+  if (!isAdmin) return;
+  if (confirm('Accept ' + d.username + '?')) socket.emit('approve-user', d.id);
+  else socket.emit('deny-user', d.id);
+});
+socket.on('new-admin-request', d => {
+  if (!isAdmin) return;
+  if (confirm('Make ' + d.username + ' admin?')) socket.emit('approve-admin', d.id);
+  else socket.emit('deny-admin', d.id);
+});
+
 function sendMsg() {
   const v = document.getElementById('msgInput').value.trim();
   if (!v) return;
   socket.emit('chat-message', { user: myName, text: v });
   document.getElementById('msgInput').value = '';
 }
-
 socket.on('chat-message', m => addMsg(m));
 socket.on('message-deleted', id => { const e = document.getElementById('m-' + id); if (e) e.remove(); });
 
@@ -286,9 +222,7 @@ function addMsg(m) {
   const d = document.createElement('div');
   d.className = 'msg';
   d.id = 'm-' + m.id;
-  let content = m.type === 'voice'
-    ? '<audio controls src="' + m.text + '"></audio>'
-    : escapeHtml(m.text);
+  const content = m.type === 'voice' ? '<audio controls src="' + m.text + '"></audio>' : escapeHtml(m.text);
   d.innerHTML = '<div><strong>' + escapeHtml(m.user) + '</strong>: ' + content + '<br><small style="color:#555">' + m.time + '</small></div>' +
     '<button class="del-btn" onclick="delMsg(\'' + m.id + '\')">X</button>';
   c.appendChild(d);
@@ -297,11 +231,9 @@ function addMsg(m) {
 function delMsg(id) { socket.emit('delete-message', id); }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Voice recording
 const recBtn = document.getElementById('recBtn');
 recBtn.onmousedown = recBtn.ontouchstart = startRec;
 recBtn.onmouseup = recBtn.ontouchend = stopRec;
-
 async function startRec(e) {
   e.preventDefault();
   try {
@@ -319,17 +251,12 @@ async function startRec(e) {
     mediaRec.start();
     recBtn.classList.add('recording');
     recBtn.textContent = '⏺';
-  } catch (err) { alert('Hindi ma-access ang mic.'); }
+  } catch (err) { alert('Mic denied.'); }
 }
 function stopRec() {
-  if (mediaRec && mediaRec.state !== 'inactive') {
-    mediaRec.stop();
-    recBtn.classList.remove('recording');
-    recBtn.textContent = '🎤';
-  }
+  if (mediaRec && mediaRec.state !== 'inactive') { mediaRec.stop(); recBtn.classList.remove('recording'); recBtn.textContent = '🎤'; }
 }
 
-// Announcement
 socket.on('announcement', a => {
   const el = document.getElementById('announcement');
   el.style.display = 'block';
@@ -340,39 +267,30 @@ function postAnnounce() {
   if (v) { socket.emit('announce', v); document.getElementById('annInput').value = ''; }
 }
 
-// Profile
 function saveProfile() {
   const f = document.getElementById('pFile').files[0];
-  const doSave = (screenshot) => {
-    socket.emit('save-profile', {
-      username: document.getElementById('pUsername').value,
-      uid: document.getElementById('pUid').value,
-      rank: document.getElementById('pRank').value,
-      screenshot: screenshot || ''
-    });
-  };
-  if (f) {
-    const r = new FileReader();
-    r.onloadend = () => doSave(r.result);
-    r.readAsDataURL(f);
-  } else doSave('');
-}
-socket.on('profile-saved', () => alert('✅ Profile saved!'));
-
-// Leaderboard
-socket.on('users-update', users => {
-  const sorted = [...users].sort((a,b) => {
-    const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
-    return order.indexOf(a.rank) - order.indexOf(b.rank);
+  const doSave = (s) => socket.emit('save-profile', {
+    username: document.getElementById('pUsername').value,
+    uid: document.getElementById('pUid').value,
+    rank: document.getElementById('pRank').value,
+    screenshot: s || ''
   });
+  if (f) { const r = new FileReader(); r.onloadend = () => doSave(r.result); r.readAsDataURL(f); }
+  else doSave('');
+}
+socket.on('profile-saved', () => alert('Profile saved!'));
+
+socket.on('users-update', users => {
+  const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
+  const sorted = [...users].sort((a,b) => order.indexOf(a.rank) - order.indexOf(b.rank));
   const lb = document.getElementById('leaderboard');
+  if (sorted.length === 0) { lb.innerHTML = '<p style="color:#666">Walang members.</p>'; return; }
   lb.innerHTML = sorted.map((u,i) => {
     const cls = u.rank.replace(/\s+/g,'');
-    return '<div class="lb-row"><span>#' + (i+1) + ' <strong>' + escapeHtml(u.username) + '</strong> <small style="color:#666">UID: ' + escapeHtml(u.uid || 'N/A') + '</small></span><span class="tier ' + cls + '">' + u.rank + '</span></div>';
-  }).join('') || '<p style="color:#666">Wala pang members.</p>';
+    return '<div class="lb-row"><span>#' + (i+1) + ' <strong>' + escapeHtml(u.username) + '</strong></span><span class="tier ' + cls + '">' + u.rank + '</span></div>';
+  }).join('');
 });
 
-// Try-out
 function submitTryout() {
   socket.emit('submit-tryout', {
     username: document.getElementById('tUser').value,
@@ -381,22 +299,47 @@ function submitTryout() {
     message: document.getElementById('tMsg').value
   });
 }
-socket.on('tryout-submitted', () => alert('✅ Try-out submitted!'));
-socket.on('new-tryout', t => {
-  if (!isAdmin) return;
-  const el = document.getElementById('tryoutList');
-  const d = document.createElement('div');
-  d.className = 'tryout-item';
-  d.id = 'to-' + t.id;
-  d.innerHTML = '<strong>' + escapeHtml(t.username) + '</strong> (UID: ' + escapeHtml(t.uid) + ', Rank: ' + escapeHtml(t.rank) + ')<br><small>' + escapeHtml(t.message) + '</small><br>' +
-    '<button onclick="socket.emit(\'approve-tryout\',' + t.id + ')">✅ Accept</button>' +
-    '<button onclick="socket.emit(\'deny-tryout\',' + t.id + ')" style="background:#444">❌ Deny</button>';
-  el.appendChild(d);
-});
-socket.on('tryout-approved', id => { const e = document.getElementById('to-'+id); if (e) e.remove(); });
-socket.on('tryout-denied', id => { const e = document.getElementById('to-'+id); if (e) e.remove(); });
+socket.on('tryout-submitted', () => alert('Tryout submitted!'));
 
-// Tabs
+// === MAILBOX ===
+socket.on('mailbox-data', data => { if (isAdmin) renderMailbox(data); });
+socket.on('mailbox-refresh', data => { if (isAdmin) renderMailbox(data); });
+
+function renderMailbox(data) {
+  if (!data) return;
+  document.getElementById('jCount').textContent = data.joins.length;
+  document.getElementById('aCount').textContent = data.admins.length;
+  document.getElementById('tCount').textContent = data.tryouts.length;
+
+  const j = document.getElementById('mailJoinList');
+  j.innerHTML = data.joins.length === 0 ? '<p style="color:#666">Walang request.</p>' :
+    data.joins.map(r => `<div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+      <strong style="color:#ffd700">${r.username}</strong>
+      <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+      <button onclick="socket.emit('approve-user','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+      <button onclick="socket.emit('deny-user','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+    </div>`).join('');
+
+  const a = document.getElementById('mailAdminList');
+  a.innerHTML = data.admins.length === 0 ? '<p style="color:#666">Walang request.</p>' :
+    data.admins.map(r => `<div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ffd700">
+      <strong style="color:#ffd700">${r.username}</strong>
+      <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+      <button onclick="socket.emit('approve-admin','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+      <button onclick="socket.emit('deny-admin','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+    </div>`).join('');
+
+  const t = document.getElementById('mailTryoutList');
+  t.innerHTML = data.tryouts.length === 0 ? '<p style="color:#666">Walang try-out.</p>' :
+    data.tryouts.map(r => `<div style="background:#1a0a0a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+      <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+      <p style="color:#888;font-size:12px;margin:4px 0">UID: ${escapeHtml(r.uid)} · Rank: ${escapeHtml(r.rank)}</p>
+      <p style="color:#ccc;font-size:12px">${escapeHtml(r.message || '')}</p>
+      <button onclick="socket.emit('approve-tryout',${r.id})" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+      <button onclick="socket.emit('deny-tryout',${r.id})" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+    </div>`).join('');
+}
+
 function switchTab(name, ev) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -404,10 +347,8 @@ function switchTab(name, ev) {
   ev.target.classList.add('active');
 }
 
-// Load initial
 socket.on('initial-data', d => {
   d.chat.forEach(addMsg);
-  d.users && socket.emit('get-initial');
   if (d.announcements[0]) {
     const el = document.getElementById('announcement');
     el.style.display = 'block';
@@ -417,8 +358,8 @@ socket.on('initial-data', d => {
     isAdmin = true;
     document.body.classList.add('admin-on');
     document.getElementById('adminTab').style.display = 'block';
-  document.getElementById('mailboxTab').style.display = 'block';
-  socket.emit('get-mailbox');
+    document.getElementById('mailboxTab').style.display = 'block';
+    if (d.mailbox) renderMailbox(d.mailbox);
   }
 });
 
@@ -426,61 +367,3 @@ socket.emit('get-initial');
 </script>
 </body>
 </html>
-
-
-// ===== MAILBOX SYSTEM =====
-socket.on('mailbox-data', (data) => {
-  if (!isAdmin) return;
-  renderMailbox(data);
-});
-
-socket.on('mailbox-refresh', (data) => {
-  if (!isAdmin) return;
-  renderMailbox(data);
-});
-
-function renderMailbox(data) {
-  const total = data.joins.length + data.admins.length + data.tryouts.length;
-  document.getElementById('mailCount').textContent = total;
-  document.getElementById('mailCount').style.background = total > 0 ? '#ff2a2a' : '#333';
-
-  // JOINS
-  const j = document.getElementById('mailJoinList');
-  document.getElementById('jCount').textContent = data.joins.length;
-  j.innerHTML = data.joins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
-    data.joins.map(r => `
-      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
-        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
-        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
-        <button onclick="socket.emit('approve-user','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
-        <button onclick="socket.emit('deny-user','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
-      </div>
-    `).join('');
-
-  // ADMINS
-  const a = document.getElementById('mailAdminList');
-  document.getElementById('aCount').textContent = data.admins.length;
-  a.innerHTML = data.admins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
-    data.admins.map(r => `
-      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ffd700">
-        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
-        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
-        <button onclick="socket.emit('approve-admin','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
-        <button onclick="socket.emit('deny-admin','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
-      </div>
-    `).join('');
-
-  // TRYOUTS
-  const t = document.getElementById('mailTryoutList');
-  document.getElementById('tCount').textContent = data.tryouts.length;
-  t.innerHTML = data.tryouts.length === 0 ? '<p style="color:#666">Wala pang try-out.</p>' :
-    data.tryouts.map(r => `
-      <div style="background:#1a0a0a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
-        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
-        <p style="color:#888;font-size:12px;margin:4px 0">UID: ${escapeHtml(r.uid)} · Rank: ${escapeHtml(r.rank)}</p>
-        <p style="color:#ccc;font-size:12px">${escapeHtml(r.message)}</p>
-        <button onclick="socket.emit('approve-tryout',${r.id})" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
-        <button onclick="socket.emit('deny-tryout',${r.id})" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
-      </div>
-    `).join('');
-}
