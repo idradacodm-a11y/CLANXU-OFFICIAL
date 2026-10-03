@@ -58,8 +58,8 @@ audio { width: 100%; margin-top: 5px; }
   <div class="tab" onclick="switchTab('leaderboard', event)">🏆 Ranking</div>
   <div class="tab" onclick="switchTab('profile', event)">👤 Profile</div>
   <div class="tab" onclick="switchTab('tryout', event)">⚔️ Try-out</div>
-  <div class="tab" onclick="switchTab('admin', event)" id="adminTab" style="display:none">🛡️ Admin</div>
-</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox <span id="mailCount" style="background:#ff2a2a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
+<div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡️ Admin</div>
 
 <div id="content-chat" class="content active">
   <div id="announcement"></div>
@@ -120,6 +120,8 @@ audio { width: 100%; margin-top: 5px; }
     <button style="width:100%" onclick="submitTryout()">📩 SUBMIT</button>
   </div>
 </div>
+
+
 <div id="content-admin" class="content">
   <div class="card">
     <h3>🛡️ ADMIN PANEL</h3>
@@ -132,6 +134,24 @@ audio { width: 100%; margin-top: 5px; }
     <div id="tryoutList"></div>
   </div>
 </div>
+
+
+<div id="content-mailbox" class="content">
+  <div class="card">
+    <h3>📬 MAILBOX</h3>
+    <p style="color:#666;font-size:12px;margin-bottom:15px">Ikaw lang ang nakakakita nito. Lahat ng pending requests ay nandito.</p>
+    
+    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
+    <div id="mailJoinList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
+    <div id="mailAdminList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
+    <div id="mailTryoutList"><p style="color:#666">Wala pang try-out.</p></div>
+  </div>
+</div>
+
 
 <script src="/socket.io/socket.io.js"></script>
 <script>

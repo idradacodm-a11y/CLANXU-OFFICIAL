@@ -100,14 +100,14 @@ io.on('connection', (socket) => {
   io.to('admin-room').emit('mailbox-refresh', getMailboxData());
   });
 
-  socket.on('admin-approved', () => {
-  isAdmin = true;
-  document.body.classList.add('admin-on');
-  document.getElementById('adminTab').style.display = 'block';
-  document.getElementById('mailboxTab').style.display = 'block';
-  localStorage.setItem('clanx_admin', 'true');
-  socket.emit('get-mailbox');
-});
+  socket.on('approve-admin', (id) => {
+  if (!admins.includes(socket.id)) return;
+  const t = io.sockets.sockets.get(id);
+  if (t) makeAdmin(t, pendingAdmins[id] || 'Admin');
+  delete pendingAdmins[id];
+  adminQueue = adminQueue.filter(r => r.id !== id);
+  io.to('admin-room').emit('mailbox-refresh', getMailboxData());
+  });
 
   socket.on('deny-admin', (id) => {
   if (!admins.includes(socket.id)) return;

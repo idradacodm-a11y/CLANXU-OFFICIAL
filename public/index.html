@@ -58,8 +58,8 @@ audio { width: 100%; margin-top: 5px; }
   <div class="tab" onclick="switchTab('leaderboard', event)">🏆 Ranking</div>
   <div class="tab" onclick="switchTab('profile', event)">👤 Profile</div>
   <div class="tab" onclick="switchTab('tryout', event)">⚔️ Try-out</div>
-  <div class="tab" onclick="switchTab('admin', event)" id="adminTab" style="display:none">🛡️ Admin</div>
-</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox <span id="mailCount" style="background:#ff2a2a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
+<div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡️ Admin</div>
 
 <div id="content-chat" class="content active">
   <div id="announcement"></div>
@@ -134,6 +134,24 @@ audio { width: 100%; margin-top: 5px; }
     <div id="tryoutList"></div>
   </div>
 </div>
+
+
+<div id="content-mailbox" class="content">
+  <div class="card">
+    <h3>📬 MAILBOX</h3>
+    <p style="color:#666;font-size:12px;margin-bottom:15px">Ikaw lang ang nakakakita nito. Lahat ng pending requests ay nandito.</p>
+    
+    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
+    <div id="mailJoinList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
+    <div id="mailAdminList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
+    <div id="mailTryoutList"><p style="color:#666">Wala pang try-out.</p></div>
+  </div>
+</div>
+
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -341,3 +359,61 @@ socket.emit('get-initial');
 </script>
 </body>
 </html>
+
+
+// ===== MAILBOX SYSTEM =====
+socket.on('mailbox-data', (data) => {
+  if (!isAdmin) return;
+  renderMailbox(data);
+});
+
+socket.on('mailbox-refresh', (data) => {
+  if (!isAdmin) return;
+  renderMailbox(data);
+});
+
+function renderMailbox(data) {
+  const total = data.joins.length + data.admins.length + data.tryouts.length;
+  document.getElementById('mailCount').textContent = total;
+  document.getElementById('mailCount').style.background = total > 0 ? '#ff2a2a' : '#333';
+
+  // JOINS
+  const j = document.getElementById('mailJoinList');
+  document.getElementById('jCount').textContent = data.joins.length;
+  j.innerHTML = data.joins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
+    data.joins.map(r => `
+      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+        <button onclick="socket.emit('approve-user','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-user','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+
+  // ADMINS
+  const a = document.getElementById('mailAdminList');
+  document.getElementById('aCount').textContent = data.admins.length;
+  a.innerHTML = data.admins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
+    data.admins.map(r => `
+      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ffd700">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+        <button onclick="socket.emit('approve-admin','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-admin','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+
+  // TRYOUTS
+  const t = document.getElementById('mailTryoutList');
+  document.getElementById('tCount').textContent = data.tryouts.length;
+  t.innerHTML = data.tryouts.length === 0 ? '<p style="color:#666">Wala pang try-out.</p>' :
+    data.tryouts.map(r => `
+      <div style="background:#1a0a0a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#888;font-size:12px;margin:4px 0">UID: ${escapeHtml(r.uid)} · Rank: ${escapeHtml(r.rank)}</p>
+        <p style="color:#ccc;font-size:12px">${escapeHtml(r.message)}</p>
+        <button onclick="socket.emit('approve-tryout',${r.id})" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-tryout',${r.id})" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+}
