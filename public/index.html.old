@@ -156,7 +156,7 @@ if (savedKey && savedName) {
   socket.on('key-result', ok => {
     if (!ok) { localStorage.clear(); location.reload(); return; }
     if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    else socket.emit('request-join', { username: savedName, uid: localStorage.getItem('clanx_uid')||'N/A', rank: localStorage.getItem('clanx_rank')||'Rookie', screenshot: localStorage.getItem('clanx_shot')||'' });
+    else socket.emit('request-join', savedName);
   });
 } else {
   const key = prompt('[ClanXU] Enter Clan Key:');
@@ -178,7 +178,7 @@ if (savedKey && savedName) {
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'false');
-      socket.emit('request-join', { username: myName, uid: 'N/A', rank: 'Rookie', screenshot: '' });
+      socket.emit('request-join', myName);
     }
   });
 }
@@ -189,7 +189,6 @@ socket.on('admin-approved', () => {
   document.body.classList.add('admin-on');
   document.getElementById('adminTab').style.display = 'block';
   document.getElementById('mailboxTab').style.display = 'block';
-  socket.emit('get-mailbox');
   socket.emit('get-mailbox');
 });
 socket.on('wait-admin-approval', () => alert('Waiting for admin approval...'));
@@ -410,7 +409,6 @@ socket.on('initial-data', d => {
     document.body.classList.add('admin-on');
     document.getElementById('adminTab').style.display = 'block';
     document.getElementById('mailboxTab').style.display = 'block';
-  socket.emit('get-mailbox');
     if (d.mailbox) renderMailbox(d.mailbox);
   }
 });
