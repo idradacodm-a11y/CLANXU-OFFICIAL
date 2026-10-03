@@ -68,7 +68,36 @@ header::after{
   background:transparent;color:var(--dim);border:1px solid var(--line);
   border-radius:2px;cursor:pointer;transition:.2s;
 }
-#logoutBtn:hover{border-color:var(--red);color:var(--red)}
+.clan-logo{
+  width:90px;height:90px;object-fit:contain;
+  margin:0 auto 8px;display:block;
+  filter:drop-shadow(0 0 18px rgba(255,30,45,.7));
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse{
+  0%,100%{filter:drop-shadow(0 0 15px rgba(255,30,45,.6))}
+  50%{filter:drop-shadow(0 0 30px rgba(255,30,45,1))}
+}
+.threat-quote{
+  margin-top:12px;padding:10px 15px;
+  font-family:'Orbitron',sans-serif;font-weight:700;
+  font-size:11px;letter-spacing:3px;line-height:1.7;
+  color:#8a8a9a;
+  text-shadow:0 0 8px rgba(255,30,45,.4);
+  border-top:1px solid rgba(255,30,45,.2);
+  border-bottom:1px solid rgba(255,30,45,.2);
+  display:inline-block;
+  animation:quoteGlow 2.5s ease-in-out infinite alternate;
+}
+.threat-quote span{
+  color:var(--red);
+  text-shadow:0 0 12px var(--red);
+  font-weight:900;
+}
+@keyframes quoteGlow{
+  from{text-shadow:0 0 8px rgba(255,30,45,.3)}
+  to{text-shadow:0 0 16px rgba(255,30,45,.7)}
+}
 
 .tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
@@ -285,8 +314,12 @@ audio{width:100%;margin-top:6px;filter:hue-rotate(-30deg)}
 <body>
 
 <header>
+  <img src="logo.png" alt="XU CLAN" class="clan-logo">
   <div class="brand">CLAN<span>XU</span></div>
-  <div class="tag">CALL OF DUTY MOBILE · <b>OFFICIAL CLAN</b> · SINCE 2024</div>
+  <div class="tag">XTREME UNIT · <b>ONE NAME. ONE FORCE.</b></div>
+  <div class="threat-quote">
+    ⚔ "WE DON'T PLAY TO WIN.<br>WE PLAY TO MAKE YOU <span>REMEMBER US.</span>" ⚔
+  </div>
   <button id="logoutBtn" onclick="logout()">LOGOUT</button>
 </header>
 

@@ -3,178 +3,421 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CLANXU OFFICIAL</title>
+<title>CLANXU — OFFICIAL CODM CLAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#0a0a0a;color:#eee;min-height:100vh}
-header{background:linear-gradient(90deg,#000,#1a0000);padding:15px;text-align:center;border-bottom:3px solid #ff2a2a;position:relative}
-h1{color:#fff;text-shadow:0 0 15px #ff2a2a;letter-spacing:3px;font-size:20px}
-h1 span{color:#ffd700}
-.tabs{display:flex;background:#111;border-bottom:2px solid #333;overflow-x:auto}
-.tab{flex:1;padding:12px;text-align:center;cursor:pointer;color:#888;font-weight:bold;min-width:70px;font-size:12px;white-space:nowrap}
-.tab.active{color:#ffd700;background:#1a0000;border-bottom:3px solid #ff2a2a}
-.content{display:none;padding:15px}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050507;
+  --bg2:#0a0a10;
+  --card:#0d0d14;
+  --line:#1a1a28;
+  --red:#ff1e2d;
+  --red2:#c4121e;
+  --gold:#ffb800;
+  --cyan:#00e5ff;
+  --green:#00ff88;
+  --txt:#e8e8ef;
+  --dim:#606074;
+}
+body{
+  font-family:'Rajdhani','Segoe UI',sans-serif;
+  background:var(--bg); color:var(--txt); min-height:100vh; overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(255,30,45,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,30,45,.03) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:999;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0px,rgba(0,0,0,.18) 1px,transparent 1px,transparent 3px);
+  opacity:.35;
+}
+header{
+  position:relative;padding:14px 15px;text-align:center;
+  background:linear-gradient(180deg,#0d0d14,#050507);
+  border-bottom:2px solid var(--red);
+  overflow:hidden;
+}
+header::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+}
+header::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red),var(--gold),var(--red),transparent);
+  animation:slide 4s linear infinite;
+}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.brand{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:26px;letter-spacing:8px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,var(--red) 60%,var(--red2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 12px rgba(255,30,45,.6));
+}
+.brand span{color:var(--gold);-webkit-text-fill-color:var(--gold);filter:drop-shadow(0 0 10px var(--gold))}
+.tag{
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim);
+  letter-spacing:4px;margin-top:6px;
+}
+.tag b{color:var(--red);font-weight:700}
+#logoutBtn{
+  position:absolute;top:12px;right:12px;padding:6px 12px;
+  font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;
+  background:transparent;color:var(--dim);border:1px solid var(--line);
+  border-radius:2px;cursor:pointer;transition:.2s;
+}
+#logoutBtn:hover{border-color:var(--red);color:var(--red)}
+
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:1;padding:13px 10px;text-align:center;cursor:pointer;
+  color:var(--dim);font-family:'Orbitron',sans-serif;font-size:10px;
+  font-weight:700;letter-spacing:1.5px;min-width:78px;
+  border-right:1px solid var(--line);transition:.2s;position:relative;
+  text-transform:uppercase;white-space:nowrap;
+}
+.tab:last-child{border-right:none}
+.tab.active{color:#fff;background:linear-gradient(180deg,rgba(255,30,45,.1),transparent)}
+.tab.active::after{
+  content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;
+  background:var(--red);box-shadow:0 0 12px var(--red);
+}
+
+.content{display:none;padding:16px;animation:fade .25s ease}
 .content.active{display:block}
-#chat{height:400px;overflow-y:auto;background:#111;border-radius:8px;padding:10px;margin-bottom:10px;border:1px solid #333}
-.msg{background:#1a1a1a;border-left:3px solid #ff2a2a;padding:8px 12px;margin-bottom:8px;border-radius:5px;display:flex;justify-content:space-between;align-items:center}
-.msg strong{color:#ffd700}
-.del-btn{background:#ff2a2a;color:white;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:11px;display:none}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:3px;
+  padding:16px;margin-bottom:12px;position:relative;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;width:32px;height:2px;background:var(--red);
+}
+.card::after{
+  content:'';position:absolute;top:0;left:0;width:2px;height:32px;background:var(--red);
+}
+.card h3{
+  font-family:'Orbitron',sans-serif;font-weight:800;font-size:13px;
+  color:#fff;letter-spacing:3px;margin-bottom:14px;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px;
+}
+.card h3::before{content:'▎';color:var(--red);font-size:18px}
+.card h4{
+  font-family:'Orbitron',sans-serif;font-size:10px;color:var(--gold);
+  letter-spacing:2px;margin:14px 0 8px;text-transform:uppercase;
+}
+
+#chat{
+  height:calc(100vh - 280px);min-height:380px;overflow-y:auto;
+  background:var(--bg2);border:1px solid var(--line);border-radius:3px;
+  padding:12px;margin-bottom:10px;font-size:13px;
+}
+#chat::-webkit-scrollbar{width:4px}
+#chat::-webkit-scrollbar-thumb{background:var(--red)}
+.msg{
+  background:var(--card);border-left:2px solid var(--red);
+  padding:8px 12px;margin-bottom:8px;border-radius:2px;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:8px;
+  transition:.2s;
+}
+.msg:hover{background:#111120;border-left-color:var(--gold)}
+.msg strong{color:var(--gold);font-weight:700;margin-right:6px;font-family:'Orbitron';font-size:11px;letter-spacing:1px}
+.del-btn{
+  background:transparent;border:1px solid var(--red);color:var(--red);
+  padding:2px 7px;border-radius:2px;cursor:pointer;font-size:10px;
+  font-family:'JetBrains Mono';display:none;
+}
 .admin-on .del-btn{display:inline-block}
+.del-btn:hover{background:var(--red);color:#fff}
+
 .controls{display:flex;gap:6px}
-input[type=text],select,textarea{flex:1;padding:12px;background:#222;border:1px solid #444;color:white;border-radius:6px;font-size:14px;width:100%}
-button{background:#ff2a2a;color:white;border:none;padding:12px 16px;border-radius:6px;font-weight:bold;cursor:pointer;text-transform:uppercase;font-size:12px}
-button:hover{background:#ffd700;color:black}
-.record-btn{background:#00adb5!important}
-#announcement{background:#ffd700;color:#000;padding:12px;border-radius:6px;margin-bottom:12px;display:none;font-weight:bold}
-.card{background:#111;border:1px solid #333;border-radius:8px;padding:15px;margin-bottom:12px}
-.card h3{color:#ffd700;margin-bottom:10px}
-.card h4{color:#00adb5;margin:12px 0 8px;font-size:13px}
-.lb-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#1a1a1a;margin-bottom:6px;border-radius:6px;border-left:3px solid #ffd700;cursor:pointer}
-.lb-row:hover{background:#222}
-.tier{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;white-space:nowrap}
-.tier.ClanXUElite{background:linear-gradient(45deg,#ff2a2a,#ffd700);color:#fff}
-.tier.Legendary{background:#ff2a2a;color:white}
-.tier.Grandmaster{background:#ff4500;color:white}
-.tier.Master{background:#a020f0;color:white}
-.tier.Pro{background:#1e90ff;color:white}
-.tier.Elite{background:#00ced1;color:black}
-.tier.Veteran{background:#32cd32;color:black}
-.tier.Rookie{background:#555;color:white}
-.role-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;margin-left:6px}
-.role-Tryouter{background:#ffa500;color:#000}
-.role-Member{background:#00adb5;color:#000}
-.role-Admin{background:#ff2a2a;color:#fff}
-.avatar{width:80px;height:80px;border-radius:50%;border:3px solid #ff2a2a;object-fit:cover}
-audio{width:100%;margin-top:5px}
-label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
-.mbox{background:#1a1a1a;padding:12px;border-radius:6px;margin-bottom:10px;border-left:3px solid #ff2a2a}
-.invite-box{background:#0a1a0a;border:1px dashed #00ff88;padding:12px;border-radius:6px;margin-top:10px}
-.invite-link{background:#000;padding:10px;border-radius:4px;font-family:monospace;font-size:11px;word-break:break-all;color:#00ff88;margin-top:6px}
-.badge-role{display:inline-block;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold;margin-bottom:10px}
+input[type=text],input[type=password],select,textarea{
+  flex:1;padding:11px 13px;background:var(--bg2);border:1px solid var(--line);
+  color:#fff;border-radius:2px;font-family:'Rajdhani';font-size:14px;
+  font-weight:500;transition:.2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--red);box-shadow:0 0 0 2px rgba(255,30,45,.1);
+}
+input::placeholder,textarea::placeholder{color:var(--dim);font-size:13px}
+
+button{
+  background:linear-gradient(135deg,var(--red),var(--red2));
+  color:#fff;border:none;padding:11px 18px;border-radius:2px;
+  font-family:'Orbitron',sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:1.5px;cursor:pointer;text-transform:uppercase;
+  transition:.2s;
+}
+button:hover{box-shadow:0 0 20px rgba(255,30,45,.5);transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#cc9200);color:#000}
+.btn-cyan{background:linear-gradient(135deg,var(--cyan),#0088aa);color:#000}
+.btn-green{background:linear-gradient(135deg,var(--green),#009955);color:#000}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+
+.record-btn{background:linear-gradient(135deg,var(--cyan),#0088aa)!important;padding:11px 14px!important;color:#000}
+.record-btn.recording{background:var(--red)!important;color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,30,45,.7)}50%{box-shadow:0 0 0 10px rgba(255,30,45,0)}}
+
+#announcement{
+  background:linear-gradient(90deg,rgba(255,184,0,.12),rgba(255,30,45,.12));
+  border:1px solid var(--gold);border-left:4px solid var(--gold);
+  padding:12px 15px;border-radius:2px;margin-bottom:14px;
+  display:none;font-family:'Rajdhani';font-weight:700;font-size:13px;
+  color:var(--gold);letter-spacing:1px;
+}
+#announcement::before{content:'◈ ANNOUNCEMENT — ';font-family:'Orbitron';font-size:10px;letter-spacing:2px}
+
+label{
+  display:block;font-family:'Orbitron',sans-serif;
+  font-size:9px;color:var(--dim);letter-spacing:2px;
+  margin-bottom:6px;margin-top:12px;text-transform:uppercase;
+}
+
+.lb-row{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:12px 14px;background:var(--bg2);margin-bottom:6px;
+  border-radius:2px;border-left:2px solid var(--line);
+  cursor:pointer;transition:.2s;
+}
+.lb-row:hover{border-left-color:var(--red);background:#111120;transform:translateX(3px)}
+.lb-rank{
+  font-family:'Orbitron';font-weight:900;font-size:14px;
+  color:var(--red);margin-right:8px;min-width:28px;
+}
+.lb-name{font-family:'Rajdhani';font-weight:700;font-size:15px;color:#fff}
+
+.tier{
+  display:inline-block;padding:3px 10px;border-radius:2px;
+  font-family:'Orbitron',monospace;font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;
+}
+.tier.ClanXUElite{background:linear-gradient(135deg,var(--red),var(--gold));color:#fff;box-shadow:0 0 12px rgba(255,184,0,.4)}
+.tier.Legendary{background:var(--red);color:#fff}
+.tier.Grandmaster{background:#ff5500;color:#fff}
+.tier.Master{background:#a020f0;color:#fff}
+.tier.Pro{background:#1e90ff;color:#fff}
+.tier.Elite{background:var(--cyan);color:#000}
+.tier.Veteran{background:var(--green);color:#000}
+.tier.Rookie{background:#444;color:#aaa}
+
+.role-tag{
+  display:inline-block;padding:2px 8px;border-radius:2px;
+  font-family:'Orbitron';font-size:9px;font-weight:700;letter-spacing:1px;
+  margin-left:6px;text-transform:uppercase;
+}
+.role-Tryouter{background:var(--gold);color:#000}
+.role-Member{background:var(--cyan);color:#000}
+.role-Admin{background:var(--red);color:#fff}
+
+.badge-role{
+  display:inline-block;padding:4px 14px;border-radius:2px;
+  font-family:'Orbitron';font-size:10px;font-weight:700;letter-spacing:2px;
+  margin-top:8px;text-transform:uppercase;
+}
+
+.avatar{
+  width:90px;height:90px;border-radius:2px;
+  border:2px solid var(--red);object-fit:cover;
+  box-shadow:0 0 20px rgba(255,30,45,.4);
+}
+
+audio{width:100%;margin-top:6px;filter:hue-rotate(-30deg)}
+
+.mbox{
+  background:var(--bg2);padding:12px;border-radius:2px;
+  margin-bottom:8px;border-left:3px solid var(--red);
+}
+.mbox strong{font-family:'Orbitron';font-size:12px;letter-spacing:1px;color:var(--gold)}
+
+.invite-box{
+  background:linear-gradient(135deg,#0a1a0a,#0d140d);
+  border:1px solid var(--green);border-left:3px solid var(--green);
+  padding:14px;border-radius:2px;
+}
+.invite-link{
+  background:#000;padding:12px;border-radius:2px;
+  font-family:'JetBrains Mono';font-size:11px;word-break:break-all;
+  color:var(--green);margin-top:8px;border:1px solid var(--line);
+}
+
+.hero{
+  text-align:center;padding:24px 0 20px;
+  border-bottom:1px dashed var(--line);margin-bottom:16px;
+}
+.hero-logo{
+  font-family:'Orbitron';font-weight:900;font-size:44px;
+  letter-spacing:12px;line-height:1;
+  background:linear-gradient(180deg,#fff 0%,var(--red) 55%,var(--red2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 25px rgba(255,30,45,.5));
+}
+.hero-sub{
+  font-family:'JetBrains Mono';font-size:9px;color:var(--dim);
+  letter-spacing:6px;margin-top:8px;
+}
+.hero-sub b{color:var(--gold)}
+
+.empty{
+  text-align:center;padding:30px;color:var(--dim);
+  font-family:'JetBrains Mono';font-size:11px;letter-spacing:1px;
+}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stat-item{
+  background:var(--bg2);padding:12px;border-radius:2px;
+  border-left:2px solid var(--red);
+}
+.stat-item .lbl{
+  font-family:'Orbitron';font-size:9px;color:var(--dim);
+  letter-spacing:1.5px;text-transform:uppercase;
+}
+.stat-item .val{
+  font-family:'Orbitron';font-size:16px;color:#fff;
+  font-weight:700;margin-top:4px;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>CLAN <span>XU</span> OFFICIAL</h1>
-  <button onclick="logout()" style="position:absolute;top:10px;right:10px;padding:6px 12px;font-size:10px;background:#333;border:1px solid #ff2a2a">LOGOUT</button>
+  <img src="logo.png" alt="XU CLAN" class="clan-logo">
+  <div class="brand">CLAN<span>XU</span></div>
+  <div class="tag">XTREME UNIT · <b>ONE NAME. ONE FORCE.</b></div>
+  <div class="threat-quote">
+    ⚔ "WE DON'T PLAY TO WIN.<br>WE PLAY TO MAKE YOU <span>REMEMBER US.</span>" ⚔
+  </div>
+  <button id="logoutBtn" onclick="logout()">LOGOUT</button>
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('chat',event)">💬 Chat</div>
-  <div class="tab" onclick="switchTab('ranking',event)" id="tabRanking">🏆 Ranking</div>
-  <div class="tab" onclick="switchTab('profile',event)">👤 Profile</div>
-  <div class="tab" onclick="switchTab('tryout',event)" id="tabTryout">⚔ Try-out</div>
-  <div class="tab" onclick="switchTab('invite',event)" id="tabInvite">🔗 Invite</div>
-  <div class="tab" onclick="switchTab('mailbox',event)" id="tabMailbox" style="display:none">📬 Mailbox</div>
-  <div class="tab" onclick="switchTab('admin',event)" id="tabAdmin" style="display:none">🛡 Admin</div>
+  <div class="tab active" onclick="switchTab('chat',event)">◆ CHAT</div>
+  <div class="tab" onclick="switchTab('ranking',event)" id="tabRanking">◈ RANKING</div>
+  <div class="tab" onclick="switchTab('profile',event)">▸ PROFILE</div>
+  <div class="tab" onclick="switchTab('tryout',event)" id="tabTryout">⚔ TRYOUT</div>
+  <div class="tab" onclick="switchTab('invite',event)" id="tabInvite">🔗 INVITE</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="tabMailbox" style="display:none">📬 MAIL</div>
+  <div class="tab" onclick="switchTab('admin',event)" id="tabAdmin" style="display:none">★ ADMIN</div>
 </div>
 
 <div id="content-chat" class="content active">
   <div id="announcement"></div>
   <div id="chat"></div>
   <div class="controls">
-    <input type="text" id="msgInput" placeholder="I-type ang mensahe..." onkeypress="if(event.key==='Enter')sendMsg()">
-    <button onclick="sendMsg()">Send</button>
-    <button class="record-btn" id="recBtn">🎤</button>
+    <input type="text" id="msgInput" placeholder="MESSAGE..." onkeypress="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()">SEND</button>
+    <button class="record-btn" id="recBtn">●</button>
   </div>
 </div>
 
 <div id="content-ranking" class="content">
+  <div class="hero">
+    <div class="hero-logo">CLANXU</div>
+    <div class="hero-sub">— <b>TOP WARRIORS</b> —</div>
+  </div>
   <div class="card">
-    <h3>🏆 CLAN LEADERBOARD</h3>
-    <p style="color:#666;font-size:11px;margin-bottom:10px">Click any name to see info</p>
+    <h3>CLAN LEADERBOARD</h3>
+    <p style="color:var(--dim);font-size:11px;margin-bottom:12px;font-family:'JetBrains Mono'">// tap any warrior to view intel</p>
     <div id="leaderboard"></div>
   </div>
 </div>
 
 <div id="content-profile" class="content">
   <div class="card">
-    <h3>👤 IYONG PROFILE</h3>
-    <div style="text-align:center;margin-bottom:15px">
-      <img id="myAvatar" class="avatar" src="https://via.placeholder.com/80" alt="">
-      <p id="myIGN" style="color:#ffd700;font-weight:bold;font-size:18px;margin-top:8px"></p>
+    <h3>MY PROFILE</h3>
+    <div style="text-align:center;margin-bottom:18px">
+      <img id="myAvatar" class="avatar" src="https://via.placeholder.com/90/0d0d14/ff1e2d?text=CX" alt="">
+      <p id="myIGN" style="color:#fff;font-weight:700;font-size:20px;font-family:'Orbitron';margin-top:10px;letter-spacing:2px"></p>
       <span id="myBadge" class="badge-role"></span>
-      <p id="myRank" style="color:#00adb5;font-size:13px;margin-top:6px"></p>
+      <p id="myRank" style="color:var(--gold);font-size:13px;margin-top:8px;font-family:'Orbitron';letter-spacing:2px"></p>
     </div>
-    <label>UID (CODM):</label>
-    <input type="text" id="pUid" placeholder="Ilagay ang UID">
-    <label>Rank:</label>
+    <label>CODM UID</label>
+    <input type="text" id="pUid" placeholder="123456789">
+    <label>RANK</label>
     <select id="pRank">
       <option>Rookie</option><option>Veteran</option><option>Elite</option>
       <option>Pro</option><option>Master</option><option>Grandmaster</option>
       <option>Legendary</option><option>ClanXU Elite</option>
     </select>
-    <label>HUD Code:</label>
-    <input type="text" id="pHud" placeholder="Ilagay ang HUD code">
-    <label>Sensitivity Code:</label>
-    <input type="text" id="pSensi" placeholder="Ilagay ang Sensi code">
-    <label>Collection Screenshot (Imgur link):</label>
-    <input type="text" id="pShot" placeholder="Paste link dito">
-    <button style="width:100%;margin-top:12px" onclick="saveProfile()">💾 I-SAVE</button>
+    <label>HUD CODE</label>
+    <input type="text" id="pHud" placeholder="HUD layout code">
+    <label>SENSITIVITY CODE</label>
+    <input type="text" id="pSensi" placeholder="Sensi code">
+    <label>COLLECTION SCREENSHOT (Imgur link)</label>
+    <input type="text" id="pShot" placeholder="https://i.imgur.com/...">
+    <button class="btn-gold" style="width:100%;margin-top:16px" onclick="saveProfile()">💾 SAVE PROFILE</button>
   </div>
 </div>
 
 <div id="content-tryout" class="content">
+  <div class="hero">
+    <div class="hero-logo">TRYOUT</div>
+    <div class="hero-sub">— <b>JOIN THE ELITE</b> —</div>
+  </div>
   <div class="card">
-    <h3>⚔ TRY-OUT APPLICATION</h3>
-    <label>IGN:</label>
-    <input type="text" id="tUser" placeholder="IGN mo">
-    <label>UID:</label>
-    <input type="text" id="tUid" placeholder="CODM UID">
-    <label>Rank:</label>
+    <h3>TRYOUT APPLICATION</h3>
+    <label>IGN</label>
+    <input type="text" id="tUser" placeholder="Your IGN">
+    <label>CODM UID</label>
+    <input type="text" id="tUid" placeholder="123456789">
+    <label>RANK</label>
     <select id="tRank">
       <option>Rookie</option><option>Veteran</option><option>Elite</option>
       <option>Pro</option><option>Master</option><option>Grandmaster</option>
       <option>Legendary</option><option>ClanXU Elite</option>
     </select>
-    <label>Role / Placement:</label>
+    <label>ROLE / PLACEMENT</label>
     <select id="tRole">
       <option>Sniper</option><option>Rusher</option><option>IGL</option>
       <option>Support</option><option>Anchor</option><option>Roamer</option>
       <option>Flex</option><option>LMG</option>
     </select>
-    <label>HUD Code:</label>
-    <input type="text" id="tHud" placeholder="HUD code mo">
-    <label>Sensitivity Code:</label>
-    <input type="text" id="tSensi" placeholder="Sensi code mo">
-    <label>Reason:</label>
-    <textarea id="tMsg" rows="3" placeholder="Bakit gusto mong sumali?"></textarea>
-    <button style="width:100%;margin-top:12px" onclick="submitTryout()">📩 SUBMIT</button>
+    <label>HUD CODE</label>
+    <input type="text" id="tHud" placeholder="HUD code">
+    <label>SENSITIVITY CODE</label>
+    <input type="text" id="tSensi" placeholder="Sensi code">
+    <label>REASON</label>
+    <textarea id="tMsg" rows="3" placeholder="Bakit gusto mong sumali sa ClanXU?"></textarea>
+    <button class="btn-gold" style="width:100%;margin-top:16px" onclick="submitTryout()">📩 SUBMIT TRYOUT</button>
   </div>
 </div>
 
 <div id="content-invite" class="content">
   <div class="card">
-    <h3>🔗 INVITE FRIENDS</h3>
-    <p style="color:#888;font-size:13px;margin-bottom:10px">I-share ang link na ito para makapag-register sila sa clan.</p>
+    <h3>INVITE FRIENDS</h3>
+    <p style="color:var(--dim);font-size:13px;margin-bottom:12px">I-share ang link para makapag-register sila sa clan.</p>
     <div class="invite-box">
-      <p style="color:#00ff88;font-size:12px;font-weight:bold">Your Invite Link:</p>
+      <p style="color:var(--green);font-family:'Orbitron';font-size:10px;letter-spacing:2px;margin-bottom:4px">YOUR INVITE LINK</p>
       <div class="invite-link" id="inviteLink">loading...</div>
-      <button style="margin-top:10px;background:#00ff88;color:#000" onclick="copyInvite()">📋 COPY LINK</button>
+      <button class="btn-green" style="width:100%;margin-top:12px" onclick="copyInvite()">📋 COPY LINK</button>
     </div>
   </div>
 </div>
 
 <div id="content-mailbox" class="content">
   <div class="card">
-    <h3>📬 MAILBOX</h3>
-    <h4>👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
-    <div id="mailJoinList"><p style="color:#666">Walang request.</p></div>
-    <h4>🛡 ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
-    <div id="mailAdminList"><p style="color:#666">Walang request.</p></div>
-    <h4>⚔ TRY-OUTS (<span id="tCount">0</span>)</h4>
-    <div id="mailTryoutList"><p style="color:#666">Walang try-out.</p></div>
+    <h3>MAILBOX</h3>
+    <p style="color:var(--dim);font-size:11px;font-family:'JetBrains Mono';margin-bottom:12px">// admin-only view</p>
+    <h4>▎ JOIN REQUESTS (<span id="jCount">0</span>)</h4>
+    <div id="mailJoinList"><p class="empty">no requests</p></div>
+    <h4>▎ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
+    <div id="mailAdminList"><p class="empty">no requests</p></div>
+    <h4>▎ TRYOUTS (<span id="tCount">0</span>)</h4>
+    <div id="mailTryoutList"><p class="empty">no tryouts</p></div>
   </div>
 </div>
 
 <div id="content-admin" class="content">
   <div class="card">
-    <h3>🛡 ADMIN PANEL</h3>
-    <label>Announcement:</label>
-    <input type="text" id="annInput" placeholder="I-type announcement...">
-    <button style="width:100%;margin-top:10px" onclick="postAnnounce()">📢 POST</button>
-    <h4>👥 ALL MEMBERS</h4>
+    <h3>COMMAND CENTER</h3>
+    <label>ANNOUNCEMENT</label>
+    <input type="text" id="annInput" placeholder="Broadcast message...">
+    <button class="btn-gold" style="width:100%;margin-top:10px" onclick="postAnnounce()">📢 BROADCAST</button>
+    <h4>▎ ROSTER MANAGEMENT</h4>
     <div id="memberList"></div>
   </div>
 </div>
@@ -195,7 +438,6 @@ const savedRole = localStorage.getItem('clanx_role') || 'Member';
 
 function logout(){if(confirm('Logout ka ba?')){localStorage.clear();location.reload();}}
 
-// Check invite in URL
 const urlParams = new URLSearchParams(window.location.search);
 const inviteFrom = urlParams.get('invite');
 
@@ -206,20 +448,19 @@ if (savedKey && savedName) {
   socket.on('key-result', ok => {
     if (!ok) { localStorage.clear(); location.reload(); return; }
     if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    else socket.emit('request-join', { username: savedName, uid: localStorage.getItem('clanx_uid')||'N/A', rank: localStorage.getItem('clanx_rank')||'Rookie', screenshot: '', type: savedRole.toLowerCase() === 'tryouter' ? 'tryouter' : 'member' });
+    else socket.emit('request-join', { username: savedName, uid: localStorage.getItem('clanx_uid')||'N/A', rank: localStorage.getItem('clanx_rank')||'Rookie', screenshot: '', type: savedRole === 'Tryouter' ? 'tryouter' : 'member' });
   });
 } else {
   const key = prompt('[ClanXU] Enter Clan Key:');
   if (!key) { location.reload(); }
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
-    if (!ok) { alert('Invalid Key'); location.reload(); return; }
-    const roleChoice = prompt('Piliin ang role:\n1 = ADMIN\n2 = MEMBER (full access)\n3 = TRYOUTER (limited access)', '2');
+    if (!ok) { alert('INVALID CLAN KEY'); location.reload(); return; }
+    const roleChoice = prompt('PUMILI NG ROLE:\n\n[1] ADMIN\n[2] MEMBER (full access)\n[3] TRYOUTER (limited)', '2');
     if (roleChoice === '1') {
       const pwd = prompt('Admin Password:');
       const name = prompt('Your IGN:');
-      myName = name || 'Admin';
-      myRole = 'Admin';
+      myName = name || 'Admin'; myRole = 'Admin';
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'true');
@@ -228,8 +469,7 @@ if (savedKey && savedName) {
     } else if (roleChoice === '3') {
       const name = prompt('Your IGN (Tryouter):');
       if (!name) { location.reload(); return; }
-      myName = name;
-      myRole = 'Tryouter';
+      myName = name; myRole = 'Tryouter';
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'false');
@@ -238,8 +478,7 @@ if (savedKey && savedName) {
     } else {
       const name = prompt('Your IGN (Member):');
       if (!name) { location.reload(); return; }
-      myName = name;
-      myRole = 'Member';
+      myName = name; myRole = 'Member';
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'false');
@@ -249,7 +488,6 @@ if (savedKey && savedName) {
   });
 }
 
-// ============ ROLE RESULT ============
 socket.on('role-result', (data) => {
   myRole = data.role;
   localStorage.setItem('clanx_role', data.role);
@@ -258,8 +496,7 @@ socket.on('role-result', (data) => {
 });
 
 socket.on('admin-approved', () => {
-  isAdmin = true;
-  myRole = 'Admin';
+  isAdmin = true; myRole = 'Admin';
   localStorage.setItem('clanx_role', 'Admin');
   document.body.classList.add('admin-on');
   applyRoleUI();
@@ -267,52 +504,43 @@ socket.on('admin-approved', () => {
 });
 
 function applyRoleUI() {
-  const tabRanking = document.getElementById('tabRanking');
-  const tabInvite = document.getElementById('tabInvite');
-  const tabMailbox = document.getElementById('tabMailbox');
-  const tabAdmin = document.getElementById('tabAdmin');
-
+  const tr = document.getElementById('tabRanking');
+  const ti = document.getElementById('tabInvite');
+  const tm = document.getElementById('tabMailbox');
+  const ta = document.getElementById('tabAdmin');
   if (myRole === 'Tryouter') {
-    // Tryouter: only Chat, Profile, Tryout
-    if (tabRanking) tabRanking.style.display = 'none';
-    if (tabInvite) tabInvite.style.display = 'none';
-    if (tabMailbox) tabMailbox.style.display = 'none';
-    if (tabAdmin) tabAdmin.style.display = 'none';
+    if (tr) tr.style.display = 'none';
+    if (ti) ti.style.display = 'none';
+    if (tm) tm.style.display = 'none';
+    if (ta) ta.style.display = 'none';
   } else if (myRole === 'Admin') {
-    if (tabRanking) tabRanking.style.display = 'block';
-    if (tabInvite) tabInvite.style.display = 'block';
-    if (tabMailbox) tabMailbox.style.display = 'block';
-    if (tabAdmin) tabAdmin.style.display = 'block';
+    if (tr) tr.style.display = 'block';
+    if (ti) ti.style.display = 'block';
+    if (tm) tm.style.display = 'block';
+    if (ta) ta.style.display = 'block';
   } else {
-    // Member
-    if (tabRanking) tabRanking.style.display = 'block';
-    if (tabInvite) tabInvite.style.display = 'block';
-    if (tabMailbox) tabMailbox.style.display = 'none';
-    if (tabAdmin) tabAdmin.style.display = 'none';
+    if (tr) tr.style.display = 'block';
+    if (ti) ti.style.display = 'block';
+    if (tm) tm.style.display = 'none';
+    if (ta) ta.style.display = 'none';
   }
-  // Update badge
-  const badge = document.getElementById('myBadge');
-  if (badge) {
-    badge.textContent = myRole;
-    badge.className = 'badge-role role-' + myRole;
-  }
+  const b = document.getElementById('myBadge');
+  if (b) { b.textContent = myRole; b.className = 'badge-role role-' + myRole; }
 }
 
 socket.on('admin-login-fail', m => { alert(m); location.reload(); });
-socket.on('wait-admin-approval', () => alert('Waiting for admin approval...'));
-socket.on('admin-denied', () => { alert('Admin denied.'); location.reload(); });
-socket.on('wait-approval', () => alert('Waiting for admin approval...'));
+socket.on('wait-admin-approval', () => alert('Wait for admin approval...'));
+socket.on('admin-denied', () => { alert('Denied.'); location.reload(); });
+socket.on('wait-approval', () => alert('Wait for admin approval...'));
 socket.on('denied', () => { alert('Denied.'); location.reload(); });
-socket.on('role-promoted', (u) => { if (u === myName) { myRole = 'Member'; applyRoleUI(); alert('Promoted ka na to Member!'); } });
+socket.on('role-promoted', (u) => { if (u === myName) { myRole = 'Member'; applyRoleUI(); alert('PROMOTED TO MEMBER'); } });
 socket.on('user-renamed', ({oldName, newName}) => {
   if (oldName === myName) { myName = newName; localStorage.setItem('clanx_name', newName); }
 });
-socket.on('user-kicked', (u) => { if (u === myName) { alert('Na-kick ka.'); localStorage.clear(); location.reload(); } });
-
+socket.on('user-kicked', (u) => { if (u === myName) { alert('KICKED.'); localStorage.clear(); location.reload(); } });
 socket.on('new-user-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 socket.on('new-admin-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 
-// ============ CHAT ============
 function sendMsg() {
   const v = document.getElementById('msgInput').value.trim();
   if (!v) return;
@@ -327,7 +555,7 @@ function addMsg(m){
   const d = document.createElement('div');
   d.className='msg'; d.id='m-'+m.id;
   const content = m.type==='voice' ? '<audio controls src="'+m.text+'"></audio>' : escapeHtml(m.text);
-  d.innerHTML='<div><strong>'+escapeHtml(m.user)+'</strong>: '+content+'<br><small style="color:#555">'+m.time+'</small></div><button class="del-btn" onclick="delMsg(\''+m.id+'\')">X</button>';
+  d.innerHTML='<div><strong>'+escapeHtml(m.user)+'</strong> '+content+'<br><small style="color:var(--dim);font-family:JetBrains Mono;font-size:10px">'+m.time+'</small></div><button class="del-btn" onclick="delMsg(\''+m.id+'\')">✕</button>';
   c.appendChild(d); c.scrollTop=c.scrollHeight;
 }
 function delMsg(id){socket.emit('delete-message',id);}
@@ -349,21 +577,20 @@ async function startRec(e){
       r.readAsDataURL(blob);
       stream.getTracks().forEach(t=>t.stop());
     };
-    mediaRec.start(); recBtn.classList.add('recording'); recBtn.textContent='⏺';
+    mediaRec.start(); recBtn.classList.add('recording');
   }catch(err){alert('Mic denied.');}
 }
-function stopRec(){if(mediaRec&&mediaRec.state!=='inactive'){mediaRec.stop();recBtn.classList.remove('recording');recBtn.textContent='🎤';}}
+function stopRec(){if(mediaRec&&mediaRec.state!=='inactive'){mediaRec.stop();recBtn.classList.remove('recording');}}
 
 socket.on('announcement', a=>{
   const el = document.getElementById('announcement');
-  el.style.display='block'; el.textContent='📢 '+a.text;
+  el.style.display='block'; el.textContent=a.text;
 });
 function postAnnounce(){
   const v = document.getElementById('annInput').value.trim();
   if(v){socket.emit('announce',v); document.getElementById('annInput').value='';}
 }
 
-// ============ PROFILE ============
 function saveProfile(){
   socket.emit('save-profile',{
     username: myName,
@@ -374,7 +601,7 @@ function saveProfile(){
     screenshot: document.getElementById('pShot').value
   });
 }
-socket.on('profile-saved', ()=>alert('Profile saved!'));
+socket.on('profile-saved', ()=>alert('PROFILE SAVED'));
 
 function fillProfileFields(u) {
   if (!u) return;
@@ -384,59 +611,54 @@ function fillProfileFields(u) {
   document.getElementById('pHud').value = u.hudcode || '';
   document.getElementById('pSensi').value = u.sensicode || '';
   document.getElementById('pShot').value = u.screenshot || '';
-  const badge = document.getElementById('myBadge');
-  badge.textContent = myRole;
-  badge.className = 'badge-role role-' + myRole;
+  const b = document.getElementById('myBadge');
+  b.textContent = myRole; b.className = 'badge-role role-' + myRole;
 }
 
-// ============ LEADERBOARD ============
 socket.on('users-update', users=>{
   window.currentUsers = users;
   const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
   const sorted = [...users].sort((a,b)=>order.indexOf(a.rank)-order.indexOf(b.rank));
   const lb = document.getElementById('leaderboard');
-  if(sorted.length===0){lb.innerHTML='<p style="color:#666">Walang members.</p>';}
+  if(sorted.length===0){lb.innerHTML='<p class="empty">// no warriors yet</p>';}
   else {
     lb.innerHTML = sorted.map((u,i)=>{
       const cls = (u.rank||'Rookie').replace(/\s+/g,'');
       const roleCls = 'role-' + (u.role || 'Member');
-      return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')"><span>#'+(i+1)+' <strong>'+escapeHtml(u.username)+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span><span class="tier '+cls+'">'+u.rank+'</span></div>';
+      return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')">'+
+        '<span><span class="lb-rank">#'+String(i+1).padStart(2,'0')+'</span><span class="lb-name">'+escapeHtml(u.username)+'</span><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>'+
+        '<span class="tier '+cls+'">'+u.rank+'</span></div>';
     }).join('');
   }
   const me = users.find(u=>u.username===myName);
   if(me) fillProfileFields(me);
 
-  // Member list in Admin
   const ml = document.getElementById('memberList');
   if (ml && isAdmin) {
     ml.innerHTML = users.map(u => {
       const roleCls = 'role-' + (u.role || 'Member');
-      return '<div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">' +
-        '<span><strong style="color:#ffd700">'+escapeHtml(u.username)+'</strong> <span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>' +
-        '<span>' +
-        '<button onclick="renameUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#00adb5">✏ Rename</button> ' +
-        (u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#00ff88;color:#000">⬆ Promote</button> ' : '') +
-        '<button onclick="kickUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#ff2a2a">✕ Kick</button>' +
-        '</span></div>';
+      return '<div style="background:var(--bg2);padding:12px;border-radius:2px;margin-bottom:6px;border-left:2px solid var(--red)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">'+
+          '<span><strong style="font-family:Orbitron;font-size:12px;color:#fff">'+escapeHtml(u.username)+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>'+
+        '</div>'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap">'+
+          '<button onclick="renameUser(\''+escapeHtml(u.username)+'\')" class="btn-cyan" style="padding:5px 10px;font-size:9px">✏ RENAME</button>' +
+          (u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+escapeHtml(u.username)+'\')" class="btn-green" style="padding:5px 10px;font-size:9px">⬆ PROMOTE</button>' : '') +
+          '<button onclick="kickUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 10px;font-size:9px">✕ KICK</button>'+
+        '</div></div>';
     }).join('');
   }
 });
 
 function renameUser(oldName) {
-  const newName = prompt('Bagong pangalan para kay ' + oldName + ':', oldName);
-  if (newName && newName !== oldName) {
-    socket.emit('rename-user', { oldName, newName });
-  }
+  const newName = prompt('Rename ' + oldName + ' to:', oldName);
+  if (newName && newName !== oldName) socket.emit('rename-user', { oldName, newName });
 }
 function promoteUser(username) {
-  if (confirm('I-promote si ' + username + ' to Member?')) {
-    socket.emit('promote-tryouter', username);
-  }
+  if (confirm('Promote ' + username + ' to MEMBER?')) socket.emit('promote-tryouter', username);
 }
 function kickUser(username) {
-  if (confirm('I-kick si ' + username + '?')) {
-    socket.emit('kick-user', username);
-  }
+  if (confirm('KICK ' + username + '?')) socket.emit('kick-user', username);
 }
 
 function showMemberInfo(username){
@@ -445,20 +667,25 @@ function showMemberInfo(username){
   const old = document.getElementById('memberModal'); if(old) old.remove();
   const modal = document.createElement('div');
   modal.id='memberModal';
-  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.onclick=e=>{if(e.target===modal) modal.remove();};
   const roleCls = 'role-' + (u.role || 'Member');
-  modal.innerHTML='<div style="background:#111;border:2px solid #ff2a2a;border-radius:10px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto">'+
-    '<div style="text-align:center;margin-bottom:15px"><h2 style="color:#ffd700;margin:0">'+escapeHtml(u.username)+'</h2><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span><p style="color:#00adb5;font-size:14px;margin-top:8px">'+u.rank+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">UID</p><p style="color:#fff;font-size:14px;font-weight:bold">'+escapeHtml(u.uid||'N/A')+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">HUD CODE</p><p style="color:#fff;font-size:13px;word-break:break-all">'+escapeHtml(u.hudcode||'N/A')+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">SENSI CODE</p><p style="color:#fff;font-size:13px;word-break:break-all">'+escapeHtml(u.sensicode||'N/A')+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px;margin-bottom:8px">SCREENSHOT</p>'+(u.screenshot?'<img src="'+u.screenshot+'" style="width:100%;border-radius:6px;border:2px solid #ff2a2a">':'<p style="color:#666;font-size:12px">Walang screenshot.</p>')+'</div>'+
-    '<button onclick="document.getElementById(\'memberModal\').remove()" style="width:100%;margin-top:10px">CLOSE</button></div>';
+  modal.innerHTML='<div style="background:var(--card);border:2px solid var(--red);border-radius:3px;padding:22px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;position:relative">'+
+    '<div style="position:absolute;top:0;left:0;width:40px;height:3px;background:var(--red)"></div>'+
+    '<div style="position:absolute;top:0;left:0;width:3px;height:40px;background:var(--red)"></div>'+
+    '<div style="text-align:center;margin-bottom:18px">'+
+      '<h2 style="color:#fff;font-family:Orbitron;font-weight:900;font-size:22px;letter-spacing:3px;margin:0">'+escapeHtml(u.username)+'</h2>'+
+      '<span class="role-tag '+roleCls+'" style="margin-top:10px">'+(u.role||'Member')+'</span>'+
+      '<p style="color:var(--gold);font-family:Orbitron;font-size:12px;letter-spacing:2px;margin-top:10px">'+u.rank+'</p>'+
+    '</div>'+
+    '<div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--red)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">UID</p><p style="color:#fff;font-size:15px;font-weight:700;margin-top:4px">'+escapeHtml(u.uid||'N/A')+'</p></div>'+
+    '<div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--gold)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">HUD CODE</p><p style="color:#fff;font-size:13px;word-break:break-all;margin-top:4px">'+escapeHtml(u.hudcode||'N/A')+'</p></div>'+
+    '<div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--cyan)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">SENSI CODE</p><p style="color:#fff;font-size:13px;word-break:break-all;margin-top:4px">'+escapeHtml(u.sensicode||'N/A')+'</p></div>'+
+    '<div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:12px;border-left:2px solid var(--line)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px;margin-bottom:8px">SCREENSHOT</p>'+(u.screenshot?'<img src="'+u.screenshot+'" style="width:100%;border-radius:2px;border:2px solid var(--red)">':'<p style="color:var(--dim);font-size:12px">No screenshot.</p>')+'</div>'+
+    '<button onclick="document.getElementById(\'memberModal\').remove()" style="width:100%;margin-top:6px">CLOSE</button></div>';
   document.body.appendChild(modal);
 }
 
-// ============ TRYOUT ============
 function submitTryout(){
   socket.emit('submit-tryout',{
     username: document.getElementById('tUser').value,
@@ -470,9 +697,8 @@ function submitTryout(){
     message: document.getElementById('tMsg').value
   });
 }
-socket.on('tryout-submitted', ()=>alert('Tryout submitted!'));
+socket.on('tryout-submitted', ()=>alert('TRYOUT SUBMITTED'));
 
-// ============ MAILBOX ============
 socket.on('mailbox-data', d=>{if(isAdmin) renderMailbox(d);});
 socket.on('mailbox-refresh', d=>{if(isAdmin) renderMailbox(d);});
 
@@ -483,36 +709,36 @@ function renderMailbox(data){
   document.getElementById('tCount').textContent = data.tryouts.length;
 
   const j = document.getElementById('mailJoinList');
-  j.innerHTML = data.joins.length===0 ? '<p style="color:#666">Walang request.</p>' :
+  j.innerHTML = data.joins.length===0 ? '<p class="empty">// none</p>' :
     data.joins.map(r=>{
       const cls = (r.rank||'Rookie').replace(/\s+/g,'');
       const typeLabel = r.type === 'tryouter' ? '<span class="role-tag role-Tryouter">TRYOUTER</span>' : '<span class="role-tag role-Member">MEMBER</span>';
-      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="color:#ffd700">'+escapeHtml(r.username)+'</strong>'+typeLabel+'</div><p style="color:#888;font-size:12px;margin:6px 0">UID: '+(r.uid||'N/A')+' · Rank: <span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></p>'+
-      (r.hudcode?'<p style="color:#888;font-size:12px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
-      (r.sensicode?'<p style="color:#888;font-size:12px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
-      (r.invitedBy?'<p style="color:#666;font-size:11px">Invited by: '+escapeHtml(r.invitedBy)+'</p>':'')+
-      '<button onclick="socket.emit(\'approve-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;margin-top:8px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>';
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center"><strong>'+escapeHtml(r.username)+'</strong>'+typeLabel+'</div>'+
+      '<p style="color:var(--dim);font-size:12px;margin:6px 0">UID: '+(r.uid||'N/A')+' · <span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></p>'+
+      (r.hudcode?'<p style="color:var(--dim);font-size:11px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
+      (r.sensicode?'<p style="color:var(--dim);font-size:11px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
+      (r.invitedBy?'<p style="color:var(--dim);font-size:11px">Invited by: '+escapeHtml(r.invitedBy)+'</p>':'')+
+      '<div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-user\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-user\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>';
     }).join('');
 
   const a = document.getElementById('mailAdminList');
-  a.innerHTML = data.admins.length===0 ? '<p style="color:#666">Walang request.</p>' :
-    data.admins.map(r=>'<div class="mbox"><strong style="color:#ffd700">'+r.username+'</strong><br><button onclick="socket.emit(\'approve-admin\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;margin-top:6px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-admin\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>').join('');
+  a.innerHTML = data.admins.length===0 ? '<p class="empty">// none</p>' :
+    data.admins.map(r=>'<div class="mbox"><strong>'+r.username+'</strong><div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-admin\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-admin\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>').join('');
 
   const t = document.getElementById('mailTryoutList');
-  t.innerHTML = data.tryouts.length===0 ? '<p style="color:#666">Walang try-out.</p>' :
+  t.innerHTML = data.tryouts.length===0 ? '<p class="empty">// none</p>' :
     data.tryouts.map(r=>{
       const cls = (r.rank||'Rookie').replace(/\s+/g,'');
-      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="color:#ffd700">'+escapeHtml(r.username)+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div>'+
-        '<p style="color:#888;font-size:12px;margin:4px 0">UID: '+(r.uid||'N/A')+'</p>'+
-        '<p style="color:#888;font-size:12px;margin:4px 0">Role: <strong style="color:#00adb5">'+(r.role||'N/A')+'</strong></p>'+
-        (r.hudcode?'<p style="color:#888;font-size:12px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
-        (r.sensicode?'<p style="color:#888;font-size:12px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
-        '<p style="color:#ccc;font-size:12px;margin:6px 0">'+(r.message||'')+'</p>'+
-        '<button onclick="socket.emit(\'approve-tryout\','+r.id+')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-tryout\','+r.id+')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>';
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong>'+escapeHtml(r.username)+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div>'+
+        '<p style="color:var(--dim);font-size:12px;margin:4px 0">UID: '+(r.uid||'N/A')+'</p>'+
+        '<p style="color:var(--dim);font-size:12px;margin:4px 0">Role: <strong style="color:var(--cyan)">'+(r.role||'N/A')+'</strong></p>'+
+        (r.hudcode?'<p style="color:var(--dim);font-size:12px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
+        (r.sensicode?'<p style="color:var(--dim);font-size:12px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
+        '<p style="color:var(--txt);font-size:12px;margin:6px 0">'+(r.message||'')+'</p>'+
+        '<div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-tryout\','+r.id+')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-tryout\','+r.id+')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>';
     }).join('');
 }
 
-// ============ INVITE ============
 function generateInviteLink() {
   const baseUrl = window.location.origin + window.location.pathname;
   const link = baseUrl + '?invite=' + encodeURIComponent(myName);
@@ -521,17 +747,16 @@ function generateInviteLink() {
 }
 function copyInvite() {
   const link = document.getElementById('inviteLink').textContent;
-  navigator.clipboard.writeText(link).then(()=>alert('Copied!')).catch(()=>{
+  navigator.clipboard.writeText(link).then(()=>alert('COPIED')).catch(()=>{
     const range = document.createRange();
     range.selectNode(document.getElementById('inviteLink'));
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
     document.execCommand('copy');
-    alert('Copied!');
+    alert('COPIED');
   });
 }
 
-// ============ TABS ============
 function switchTab(name, ev){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
@@ -544,12 +769,11 @@ function switchTab(name, ev){
   }
 }
 
-// ============ INIT ============
 socket.on('initial-data', d=>{
   d.chat.forEach(addMsg);
   if(d.announcements[0]){
     const el = document.getElementById('announcement');
-    el.style.display='block'; el.textContent='📢 '+d.announcements[0].text;
+    el.style.display='block'; el.textContent=d.announcements[0].text;
   }
   if(d.isAdmin){
     isAdmin = true;
