@@ -72,11 +72,12 @@
     <input type="text" id="pHud" placeholder="HUD layout code">
     <label>SENSITIVITY CODE</label>
     <input type="text" id="pSensi" placeholder="Sensi code">
-    <label>COLLECTION SCREENSHOT (Imgur link)</label>
-    <input type="text" id="pShot" placeholder="https://i.imgur.com/...">
-    <button class="btn-gold" style="width:100%;margin-top:16px" onclick="saveProfile()">💾 SAVE PROFILE</button>
-  </div>
-</div>
+    <label>UPLOAD PROFILE PICTURE (from phone)</label>
+<input type="file" id="pFile" accept="image/*" style="padding:8px;background:var(--bg2);border:1px solid var(--line);color:#fff;border-radius:2px;width:100%;font-size:12px">
+<label>UPLOAD COLLECTION SCREENSHOT (from phone)</label>
+<input type="file" id="cFile" accept="image/*" style="padding:8px;background:var(--bg2);border:1px solid var(--line);color:#fff;border-radius:2px;width:100%;font-size:12px">
+<label>OR PASTE IMGUR LINK</label>
+<input type="text" id="pShot" placeholder="https://i.imgur.com/...">
 
 <div id="content-tryout" class="content">
   <div class="hero">

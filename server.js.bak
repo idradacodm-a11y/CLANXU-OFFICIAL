@@ -15,8 +15,8 @@ const MAX_ADMINS = 4;
 let pendingUsers = {};
 let pendingAdmins = {};
 let admins = [];
-let users = {};       // username -> user object (Member / Admin)
-let tryouters = {};   // username -> tryouter object
+let users = {};
+let tryouters = {};
 let announcements = [];
 let chatHistory = [];
 let tryouts = [];
@@ -36,26 +36,13 @@ function allUsers() {
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
 
-  // ============ REGISTRATION ============
   socket.on('request-join', (data) => {
     const uname = data.username;
     if (!uname) return;
-
-    // Existing member/tryouter auto-approve
-    if (users[uname]) {
-      socket.emit('role-result', { role: users[uname].role || 'Member', user: users[uname] });
-      return;
-    }
-    if (tryouters[uname]) {
-      socket.emit('role-result', { role: 'Tryouter', user: tryouters[uname] });
-      return;
-    }
-    // Already pending?
+    if (users[uname]) return socket.emit('role-result', { role: users[uname].role || 'Member', user: users[uname] });
+    if (tryouters[uname]) return socket.emit('role-result', { role: 'Tryouter', user: tryouters[uname] });
     const existing = Object.values(pendingUsers).find(r => r.username === uname);
-    if (existing) {
-      socket.emit('wait-approval');
-      return;
-    }
+    if (existing) return socket.emit('wait-approval');
     pendingUsers[socket.id] = data;
     socket.emit('wait-approval');
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
@@ -71,7 +58,6 @@ io.on('connection', (socket) => {
     makeAdmin(socket, data.username);
   });
 
-  // Approve registration
   socket.on('approve-user', (id) => {
     if (!admins.includes(socket.id)) return;
     const t = io.sockets.sockets.get(id);
@@ -79,24 +65,16 @@ io.on('connection', (socket) => {
     if (t && req) {
       if (req.type === 'tryouter') {
         tryouters[req.username] = {
-          username: req.username,
-          uid: req.uid || 'N/A',
-          rank: req.rank || 'Rookie',
-          hudcode: req.hudcode || '',
-          sensicode: req.sensicode || '',
-          screenshot: req.screenshot || '',
-          role: 'Tryouter'
+          username: req.username, uid: req.uid || 'N/A', rank: req.rank || 'Rookie',
+          hudcode: req.hudcode || '', sensicode: req.sensicode || '',
+          screenshot: req.screenshot || '', role: 'Tryouter'
         };
         t.emit('role-result', { role: 'Tryouter', user: tryouters[req.username] });
       } else {
         users[req.username] = {
-          username: req.username,
-          uid: req.uid || 'N/A',
-          rank: req.rank || 'Rookie',
-          hudcode: req.hudcode || '',
-          sensicode: req.sensicode || '',
-          screenshot: req.screenshot || '',
-          role: 'Member'
+          username: req.username, uid: req.uid || 'N/A', rank: req.rank || 'Rookie',
+          hudcode: req.hudcode || '', sensicode: req.sensicode || '',
+          screenshot: req.screenshot || '', role: 'Member'
         };
         t.emit('role-result', { role: 'Member', user: users[req.username] });
       }
@@ -130,7 +108,6 @@ io.on('connection', (socket) => {
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
   });
 
-  // ============ ADMIN ACTIONS ============
   socket.on('promote-tryouter', (username) => {
     if (!admins.includes(socket.id)) return;
     if (tryouters[username]) {
@@ -163,7 +140,6 @@ io.on('connection', (socket) => {
     io.emit('user-kicked', username);
   });
 
-  // ============ PROFILE ============
   socket.on('save-profile', (data) => {
     const uname = data.username;
     if (!uname) return;
@@ -178,7 +154,6 @@ io.on('connection', (socket) => {
     io.emit('users-update', allUsers());
   });
 
-  // ============ CHAT ============
   socket.on('chat-message', (data) => {
     const msg = {
       id: Date.now() + '-' + Math.random().toString(36).substr(2, 6),
@@ -203,7 +178,6 @@ io.on('connection', (socket) => {
     io.emit('announcement', a);
   });
 
-  // ============ TRYOUT ============
   socket.on('submit-tryout', (data) => {
     const t = { id: Date.now(), ...data, time: new Date().toLocaleString() };
     tryouts.unshift(t);
@@ -225,7 +199,6 @@ io.on('connection', (socket) => {
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
   });
 
-  // ============ INIT ============
   socket.on('get-mailbox', () => {
     if (!admins.includes(socket.id)) return;
     socket.emit('mailbox-data', getMailboxData());
@@ -233,9 +206,7 @@ io.on('connection', (socket) => {
 
   socket.on('get-initial', () => {
     socket.emit('initial-data', {
-      chat: chatHistory,
-      users: allUsers(),
-      announcements: announcements,
+      chat: chatHistory, users: allUsers(), announcements: announcements,
       isAdmin: admins.includes(socket.id),
       mailbox: admins.includes(socket.id) ? getMailboxData() : { joins: [], admins: [], tryouts: [] }
     });

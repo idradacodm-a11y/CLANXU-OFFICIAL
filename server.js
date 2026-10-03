@@ -218,16 +218,35 @@ io.on('connection', (socket) => {
   });
 });
 
-function makeAdmin(socket, username) {
-  if (!admins.includes(socket.id)) admins.push(socket.id);
-  socket.join('admin-room');
-  const uname = username || 'Admin';
-  if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin', hudcode: '', sensicode: '' };
-  users[uname].rank = 'ClanXU Elite';
-  users[uname].role = 'Admin';
-  socket.emit('admin-approved');
-  socket.emit('mailbox-data', getMailboxData());
-  io.emit('users-update', allUsers());
+function saveProfile(){
+  const pFileInput = document.getElementById('pFile');
+  const cFileInput = document.getElementById('cFile');
+  const pFile = pFileInput ? pFileInput.files[0] : null;
+  const cFile = cFileInput ? cFileInput.files[0] : null;
+
+  const readFile = (file) => new Promise((resolve) => {
+    if (!file) return resolve('');
+    if (file.size > 800000) {
+      alert('Masyadong malaki yung ' + file.name + '. Max 800KB lang.');
+      return resolve('');
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+
+  Promise.all([readFile(pFile), readFile(cFile)]).then(([avatarData, collectionData]) => {
+    const shotLink = document.getElementById('pShot').value;
+    socket.emit('save-profile', {
+      username: myName,
+      uid: document.getElementById('pUid').value,
+      rank: document.getElementById('pRank').value,
+      hudcode: document.getElementById('pHud').value,
+      sensicode: document.getElementById('pSensi').value,
+      screenshot: collectionData || shotLink,
+      avatar: avatarData || undefined
+    });
+  });
 }
 
 const PORT = process.env.PORT || 3000;
