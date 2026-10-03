@@ -120,8 +120,6 @@ audio { width: 100%; margin-top: 5px; }
     <button style="width:100%" onclick="submitTryout()">📩 SUBMIT</button>
   </div>
 </div>
-
-
 <div id="content-admin" class="content">
   <div class="card">
     <h3>🛡️ ADMIN PANEL</h3>
