@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLANXU OFFICIAL</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #0a0a0a; color: #eee; min-height: 100vh; }
+header { background: linear-gradient(90deg, #000, #1a0000); padding: 15px; text-align: center; border-bottom: 3px solid #ff2a2a; box-shadow: 0 0 20px rgba(255,42,42,0.5); }
+h1 { color: #fff; text-shadow: 0 0 15px #ff2a2a; letter-spacing: 3px; font-size: 22px; }
+h1 span { color: #ffd700; }
+.tabs { display: flex; background: #111; border-bottom: 2px solid #333; overflow-x: auto; }
+.tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: #888; font-weight: bold; min-width: 80px; font-size: 13px; }
+.tab.active { color: #ffd700; background: #1a0000; border-bottom: 3px solid #ff2a2a; }
+.content { display: none; padding: 15px; }
+.content.active { display: block; }
+#chat { height: 400px; overflow-y: auto; background: #111; border-radius: 8px; padding: 10px; margin-bottom: 10px; border: 1px solid #333; }
+.msg { background: #1a1a1a; border-left: 3px solid #ff2a2a; padding: 8px 12px; margin-bottom: 8px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+.msg strong { color: #ffd700; }
+.del-btn { background: #ff2a2a; color: white; border: none; padding: 3px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; display: none; }
+.admin-on .del-btn { display: inline-block; }
+.controls { display: flex; gap: 6px; }
+input[type=text] { flex: 1; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; font-size: 14px; }
+button { background: #ff2a2a; color: white; border: none; padding: 12px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+button:hover { background: #ffd700; color: black; }
+.record-btn { background: #00adb5 !important; }
+.record-btn.recording { background: #ff0000 !important; }
+#announcement { background: #ffd700; color: #000; padding: 12px; border-radius: 6px; margin-bottom: 12px; display: none; font-weight: bold; }
+.card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 12px; }
+.card h3 { color: #ffd700; margin-bottom: 10px; }
+select, textarea { width: 100%; padding: 10px; background: #222; color: white; border: 1px solid #444; border-radius: 6px; margin-bottom: 10px; }
+.tier { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+.tier.ClanXUElite { background: linear-gradient(45deg, #ff2a2a, #ffd700); color: #fff; text-shadow: 1px 1px 2px #000; }
+.tier.Legendary { background: #ff2a2a; color: white; }
+.tier.Grandmaster { background: #ff4500; color: white; }
+.tier.Master { background: #a020f0; color: white; }
+.tier.Pro { background: #1e90ff; color: white; }
+.tier.Elite { background: #00ced1; color: black; }
+.tier.Veteran { background: #32cd32; color: black; }
+.tier.Rookie { background: #555; color: white; }
+.lb-row { display: flex; justify-content: space-between; padding: 10px; background: #1a1a1a; margin-bottom: 6px; border-radius: 6px; border-left: 3px solid #ffd700; }
+.avatar { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #ff2a2a; object-fit: cover; }
+.tryout-item { background: #1a0a0a; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #ff2a2a; }
+.tryout-item button { padding: 6px 10px; font-size: 11px; margin-right: 5px; }
+.fb-link { display: block; background: #1877f2; color: white; padding: 15px; text-align: center; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 10px; }
+audio { width: 100%; margin-top: 5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CLAN <span>XU</span> OFFICIAL</h1>
+<button onclick="logout()" style="position:absolute;top:10px;right:10px;padding:6px 12px;font-size:10px;background:#333;border:1px solid #ff2a2a;color:#fff;border-radius:4px">LOGOUT</button>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('chat', event)">💬 Chat</div>
+  <div class="tab" onclick="switchTab('leaderboard', event)">🏆 Ranking</div>
+  <div class="tab" onclick="switchTab('profile', event)">👤 Profile</div>
+  <div class="tab" onclick="switchTab('tryout', event)">⚔️ Try-out</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox <span id="mailCount" style="background:#ff2a2a;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px">0</span></div>
+<div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡️ Admin</div>
+
+<div id="content-chat" class="content active">
+  <div id="announcement"></div>
+  <div id="chat"></div>
+  <div class="controls">
+    <input type="text" id="msgInput" placeholder="I-type ang mensahe..." onkeypress="if(event.key==='Enter')sendMsg()">
+    <button onclick="sendMsg()">Send</button>
+    <button class="record-btn" id="recBtn">🎤</button>
+  </div>
+</div>
+
+<div id="content-leaderboard" class="content">
+  <div class="card">
+    <h3>🏆 CLAN LEADERBOARD</h3>
+    <div id="leaderboard"></div>
+  </div>
+</div>
+
+<div id="content-profile" class="content">
+  <div class="card">
+    <h3>👤 IYONG PROFILE</h3>
+    <div style="text-align:center; margin-bottom:15px">
+      <img id="myAvatar" class="avatar" src="https://via.placeholder.com/60" alt="">
+      <p id="myRank" style="color:#ffd700; margin-top:8px; font-weight:bold"></p>
+    </div>
+    <label>Username:</label>
+    <input type="text" id="pUsername" placeholder="Pangalan mo">
+    <label>UID (CODM):</label>
+    <input type="text" id="pUid" placeholder="UID mo">
+    <label>Rank:</label>
+    <select id="pRank">
+      <option>Rookie</option>
+      <option>Veteran</option>
+      <option>Elite</option>
+      <option>Pro</option>
+      <option>Master</option>
+      <option>Grandmaster</option>
+      <option>Legendary</option>
+      <option>ClanXU Elite</option>
+    </select>
+    <label>Collection Screenshot:</label>
+    <input type="file" id="pFile" accept="image/*">
+    <button style="width:100%" onclick="saveProfile()">💾 I-SAVE</button>
+  </div>
+</div>
+
+<div id="content-tryout" class="content">
+  <div class="card">
+    <h3>⚔️ TRY-OUT APPLICATION</h3>
+    <label>Username:</label>
+    <input type="text" id="tUser" placeholder="IGN mo">
+    <label>UID:</label>
+    <input type="text" id="tUid" placeholder="CODM UID">
+    <label>Rank:</label>
+    <input type="text" id="tRank" placeholder="Current rank mo">
+    <label>Bakit gusto mong sumali?</label>
+    <textarea id="tMsg" rows="3" placeholder="Reason..."></textarea>
+    <button style="width:100%" onclick="submitTryout()">📩 SUBMIT</button>
+  </div>
+</div>
+
+
+<div id="content-admin" class="content">
+  <div class="card">
+    <h3>🛡️ ADMIN PANEL</h3>
+    <label>Announcement:</label>
+    <input type="text" id="annInput" placeholder="I-type announcement...">
+    <button onclick="postAnnounce()" style="width:100%; margin-bottom:15px">📢 POST</button>
+    <h4 style="color:#ffd700; margin:10px 0">👥 Join Requests</h4>
+    <div id="joinList"></div>
+    <h4 style="color:#ffd700; margin:10px 0">⚔️ Try-outs</h4>
+    <div id="tryoutList"></div>
+  </div>
+</div>
+
+
+<div id="content-mailbox" class="content">
+  <div class="card">
+    <h3>📬 MAILBOX</h3>
+    <p style="color:#666;font-size:12px;margin-bottom:15px">Ikaw lang ang nakakakita nito. Lahat ng pending requests ay nandito.</p>
+    
+    <h4 style="color:#ffd700; margin:10px 0">👥 JOIN REQUESTS (<span id="jCount">0</span>)</h4>
+    <div id="mailJoinList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">🛡️ ADMIN REQUESTS (<span id="aCount">0</span>)</h4>
+    <div id="mailAdminList"><p style="color:#666">Wala pang request.</p></div>
+    
+    <h4 style="color:#ffd700; margin:15px 0 10px">⚔️ TRY-OUTS (<span id="tCount">0</span>)</h4>
+    <div id="mailTryoutList"><p style="color:#666">Wala pang try-out.</p></div>
+  </div>
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let isAdmin = false;
+let myName = 'Guest';
+let mediaRec, chunks = [];
+
+// Initial flow
+// SAVE STATE
+const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
+  const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
+  const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) { localStorage.clear(); location.reload(); }
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
+  // === SAVE LOGIN ===
+const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+if (savedKey && savedName) {
+  // AUTO-LOGIN - hindi na tatanungin
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) {
+      socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    } else {
+      socket.emit('request-join', savedName);
+    }
+  });
+} else {
+  // FIRST TIME LOGIN
+  const key = prompt('[ClanXU] Enter Clan Key:');
+  socket.emit('check-key', key);
+  socket.on('key-result', ok => {
+    if (!ok) { alert('Invalid Key'); location.reload(); return; }
+    const isAdminAttempt = confirm('Are you the ADMIN?');
+    if (isAdminAttempt) {
+      const pwd = prompt('Admin Password:');
+      const name = prompt('Your IGN:');
+      myName = name || 'Admin';
+      localStorage.setItem('clanx_key', key);
+      localStorage.setItem('clanx_name', myName);
+      localStorage.setItem('clanx_admin', 'true');
+      socket.emit('admin-login', { password: pwd, username: myName });
+    } else {
+      const name = prompt('Your IGN:');
+      myName = name || 'Recruit';
+      localStorage.setItem('clanx_key', key);
+      localStorage.setItem('clanx_name', myName);
+      localStorage.setItem('clanx_admin', 'false');
+      socket.emit('request-join', myName);
+    }
+  });
+}
+
+// Chat
+function sendMsg() {
+  const v = document.getElementById('msgInput').value.trim();
+  if (!v) return;
+  socket.emit('chat-message', { user: myName, text: v });
+  document.getElementById('msgInput').value = '';
+}
+
+socket.on('chat-message', m => addMsg(m));
+socket.on('message-deleted', id => { const e = document.getElementById('m-' + id); if (e) e.remove(); });
+
+function addMsg(m) {
+  const c = document.getElementById('chat');
+  const d = document.createElement('div');
+  d.className = 'msg';
+  d.id = 'm-' + m.id;
+  let content = m.type === 'voice'
+    ? '<audio controls src="' + m.text + '"></audio>'
+    : escapeHtml(m.text);
+  d.innerHTML = '<div><strong>' + escapeHtml(m.user) + '</strong>: ' + content + '<br><small style="color:#555">' + m.time + '</small></div>' +
+    '<button class="del-btn" onclick="delMsg(\'' + m.id + '\')">X</button>';
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+function delMsg(id) { socket.emit('delete-message', id); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Voice recording
+const recBtn = document.getElementById('recBtn');
+recBtn.onmousedown = recBtn.ontouchstart = startRec;
+recBtn.onmouseup = recBtn.ontouchend = stopRec;
+
+async function startRec(e) {
+  e.preventDefault();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRec = new MediaRecorder(stream);
+    chunks = [];
+    mediaRec.ondataavailable = ev => chunks.push(ev.data);
+    mediaRec.onstop = () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const r = new FileReader();
+      r.onloadend = () => socket.emit('chat-message', { user: myName, text: r.result, type: 'voice' });
+      r.readAsDataURL(blob);
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRec.start();
+    recBtn.classList.add('recording');
+    recBtn.textContent = '⏺';
+  } catch (err) { alert('Hindi ma-access ang mic.'); }
+}
+function stopRec() {
+  if (mediaRec && mediaRec.state !== 'inactive') {
+    mediaRec.stop();
+    recBtn.classList.remove('recording');
+    recBtn.textContent = '🎤';
+  }
+}
+
+// Announcement
+socket.on('announcement', a => {
+  const el = document.getElementById('announcement');
+  el.style.display = 'block';
+  el.textContent = '📢 ' + a.text;
+});
+function postAnnounce() {
+  const v = document.getElementById('annInput').value.trim();
+  if (v) { socket.emit('announce', v); document.getElementById('annInput').value = ''; }
+}
+
+// Profile
+function saveProfile() {
+  const f = document.getElementById('pFile').files[0];
+  const doSave = (screenshot) => {
+    socket.emit('save-profile', {
+      username: document.getElementById('pUsername').value,
+      uid: document.getElementById('pUid').value,
+      rank: document.getElementById('pRank').value,
+      screenshot: screenshot || ''
+    });
+  };
+  if (f) {
+    const r = new FileReader();
+    r.onloadend = () => doSave(r.result);
+    r.readAsDataURL(f);
+  } else doSave('');
+}
+socket.on('profile-saved', () => alert('✅ Profile saved!'));
+
+// Leaderboard
+socket.on('users-update', users => {
+  const sorted = [...users].sort((a,b) => {
+    const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
+    return order.indexOf(a.rank) - order.indexOf(b.rank);
+  });
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = sorted.map((u,i) => {
+    const cls = u.rank.replace(/\s+/g,'');
+    return '<div class="lb-row"><span>#' + (i+1) + ' <strong>' + escapeHtml(u.username) + '</strong> <small style="color:#666">UID: ' + escapeHtml(u.uid || 'N/A') + '</small></span><span class="tier ' + cls + '">' + u.rank + '</span></div>';
+  }).join('') || '<p style="color:#666">Wala pang members.</p>';
+});
+
+// Try-out
+function submitTryout() {
+  socket.emit('submit-tryout', {
+    username: document.getElementById('tUser').value,
+    uid: document.getElementById('tUid').value,
+    rank: document.getElementById('tRank').value,
+    message: document.getElementById('tMsg').value
+  });
+}
+socket.on('tryout-submitted', () => alert('✅ Try-out submitted!'));
+socket.on('new-tryout', t => {
+  if (!isAdmin) return;
+  const el = document.getElementById('tryoutList');
+  const d = document.createElement('div');
+  d.className = 'tryout-item';
+  d.id = 'to-' + t.id;
+  d.innerHTML = '<strong>' + escapeHtml(t.username) + '</strong> (UID: ' + escapeHtml(t.uid) + ', Rank: ' + escapeHtml(t.rank) + ')<br><small>' + escapeHtml(t.message) + '</small><br>' +
+    '<button onclick="socket.emit(\'approve-tryout\',' + t.id + ')">✅ Accept</button>' +
+    '<button onclick="socket.emit(\'deny-tryout\',' + t.id + ')" style="background:#444">❌ Deny</button>';
+  el.appendChild(d);
+});
+socket.on('tryout-approved', id => { const e = document.getElementById('to-'+id); if (e) e.remove(); });
+socket.on('tryout-denied', id => { const e = document.getElementById('to-'+id); if (e) e.remove(); });
+
+// Tabs
+function switchTab(name, ev) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.getElementById('content-' + name).classList.add('active');
+  ev.target.classList.add('active');
+}
+
+// Load initial
+socket.on('initial-data', d => {
+  d.chat.forEach(addMsg);
+  d.users && socket.emit('get-initial');
+  if (d.announcements[0]) {
+    const el = document.getElementById('announcement');
+    el.style.display = 'block';
+    el.textContent = '📢 ' + d.announcements[0].text;
+  }
+  if (d.isAdmin) {
+    isAdmin = true;
+    document.body.classList.add('admin-on');
+    document.getElementById('adminTab').style.display = 'block';
+  document.getElementById('mailboxTab').style.display = 'block';
+  socket.emit('get-mailbox');
+  }
+});
+
+socket.emit('get-initial');
+</script>
+</body>
+</html>
+
+
+// ===== MAILBOX SYSTEM =====
+socket.on('mailbox-data', (data) => {
+  if (!isAdmin) return;
+  renderMailbox(data);
+});
+
+socket.on('mailbox-refresh', (data) => {
+  if (!isAdmin) return;
+  renderMailbox(data);
+});
+
+function renderMailbox(data) {
+  const total = data.joins.length + data.admins.length + data.tryouts.length;
+  document.getElementById('mailCount').textContent = total;
+  document.getElementById('mailCount').style.background = total > 0 ? '#ff2a2a' : '#333';
+
+  // JOINS
+  const j = document.getElementById('mailJoinList');
+  document.getElementById('jCount').textContent = data.joins.length;
+  j.innerHTML = data.joins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
+    data.joins.map(r => `
+      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+        <button onclick="socket.emit('approve-user','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-user','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+
+  // ADMINS
+  const a = document.getElementById('mailAdminList');
+  document.getElementById('aCount').textContent = data.admins.length;
+  a.innerHTML = data.admins.length === 0 ? '<p style="color:#666">Wala pang request.</p>' :
+    data.admins.map(r => `
+      <div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ffd700">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#666;font-size:11px;margin:4px 0">${r.time}</p>
+        <button onclick="socket.emit('approve-admin','${r.id}')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-admin','${r.id}')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+
+  // TRYOUTS
+  const t = document.getElementById('mailTryoutList');
+  document.getElementById('tCount').textContent = data.tryouts.length;
+  t.innerHTML = data.tryouts.length === 0 ? '<p style="color:#666">Wala pang try-out.</p>' :
+    data.tryouts.map(r => `
+      <div style="background:#1a0a0a;padding:10px;border-radius:6px;margin-bottom:8px;border-left:3px solid #ff2a2a">
+        <strong style="color:#ffd700">${escapeHtml(r.username)}</strong>
+        <p style="color:#888;font-size:12px;margin:4px 0">UID: ${escapeHtml(r.uid)} · Rank: ${escapeHtml(r.rank)}</p>
+        <p style="color:#ccc;font-size:12px">${escapeHtml(r.message)}</p>
+        <button onclick="socket.emit('approve-tryout',${r.id})" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button>
+        <button onclick="socket.emit('deny-tryout',${r.id})" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button>
+      </div>
+    `).join('');
+}
