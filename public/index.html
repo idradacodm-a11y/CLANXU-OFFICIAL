@@ -11,7 +11,7 @@ header{background:linear-gradient(90deg,#000,#1a0000);padding:15px;text-align:ce
 h1{color:#fff;text-shadow:0 0 15px #ff2a2a;letter-spacing:3px;font-size:20px}
 h1 span{color:#ffd700}
 .tabs{display:flex;background:#111;border-bottom:2px solid #333;overflow-x:auto}
-.tab{flex:1;padding:12px;text-align:center;cursor:pointer;color:#888;font-weight:bold;min-width:75px;font-size:12px;white-space:nowrap}
+.tab{flex:1;padding:12px;text-align:center;cursor:pointer;color:#888;font-weight:bold;min-width:70px;font-size:12px;white-space:nowrap}
 .tab.active{color:#ffd700;background:#1a0000;border-bottom:3px solid #ff2a2a}
 .content{display:none;padding:15px}
 .content.active{display:block}
@@ -40,11 +40,17 @@ button:hover{background:#ffd700;color:black}
 .tier.Elite{background:#00ced1;color:black}
 .tier.Veteran{background:#32cd32;color:black}
 .tier.Rookie{background:#555;color:white}
+.role-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;margin-left:6px}
+.role-Tryouter{background:#ffa500;color:#000}
+.role-Member{background:#00adb5;color:#000}
+.role-Admin{background:#ff2a2a;color:#fff}
 .avatar{width:80px;height:80px;border-radius:50%;border:3px solid #ff2a2a;object-fit:cover}
 audio{width:100%;margin-top:5px}
 label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
 .mbox{background:#1a1a1a;padding:12px;border-radius:6px;margin-bottom:10px;border-left:3px solid #ff2a2a}
-.role-tag{display:inline-block;background:#00adb5;color:#000;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;margin-left:4px}
+.invite-box{background:#0a1a0a;border:1px dashed #00ff88;padding:12px;border-radius:6px;margin-top:10px}
+.invite-link{background:#000;padding:10px;border-radius:4px;font-family:monospace;font-size:11px;word-break:break-all;color:#00ff88;margin-top:6px}
+.badge-role{display:inline-block;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -56,11 +62,12 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('chat',event)">💬 Chat</div>
-  <div class="tab" onclick="switchTab('ranking',event)">🏆 Ranking</div>
+  <div class="tab" onclick="switchTab('ranking',event)" id="tabRanking">🏆 Ranking</div>
   <div class="tab" onclick="switchTab('profile',event)">👤 Profile</div>
-  <div class="tab" onclick="switchTab('tryout',event)">⚔ Try-out</div>
-  <div class="tab" onclick="switchTab('mailbox',event)" id="mailboxTab" style="display:none">📬 Mailbox</div>
-  <div class="tab" onclick="switchTab('admin',event)" id="adminTab" style="display:none">🛡 Admin</div>
+  <div class="tab" onclick="switchTab('tryout',event)" id="tabTryout">⚔ Try-out</div>
+  <div class="tab" onclick="switchTab('invite',event)" id="tabInvite">🔗 Invite</div>
+  <div class="tab" onclick="switchTab('mailbox',event)" id="tabMailbox" style="display:none">📬 Mailbox</div>
+  <div class="tab" onclick="switchTab('admin',event)" id="tabAdmin" style="display:none">🛡 Admin</div>
 </div>
 
 <div id="content-chat" class="content active">
@@ -87,7 +94,8 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
     <div style="text-align:center;margin-bottom:15px">
       <img id="myAvatar" class="avatar" src="https://via.placeholder.com/80" alt="">
       <p id="myIGN" style="color:#ffd700;font-weight:bold;font-size:18px;margin-top:8px"></p>
-      <p id="myRank" style="color:#00adb5;font-size:13px"></p>
+      <span id="myBadge" class="badge-role"></span>
+      <p id="myRank" style="color:#00adb5;font-size:13px;margin-top:6px"></p>
     </div>
     <label>UID (CODM):</label>
     <input type="text" id="pUid" placeholder="Ilagay ang UID">
@@ -97,12 +105,10 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
       <option>Pro</option><option>Master</option><option>Grandmaster</option>
       <option>Legendary</option><option>ClanXU Elite</option>
     </select>
-    <label>Role / Placement:</label>
-    <select id="pRole">
-      <option>Sniper</option><option>Rusher</option><option>IGL</option>
-      <option>Support</option><option>Anchor</option><option>Roamer</option>
-      <option>Flex</option><option>LMG</option>
-    </select>
+    <label>HUD Code:</label>
+    <input type="text" id="pHud" placeholder="Ilagay ang HUD code">
+    <label>Sensitivity Code:</label>
+    <input type="text" id="pSensi" placeholder="Ilagay ang Sensi code">
     <label>Collection Screenshot (Imgur link):</label>
     <input type="text" id="pShot" placeholder="Paste link dito">
     <button style="width:100%;margin-top:12px" onclick="saveProfile()">💾 I-SAVE</button>
@@ -128,9 +134,25 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
       <option>Support</option><option>Anchor</option><option>Roamer</option>
       <option>Flex</option><option>LMG</option>
     </select>
+    <label>HUD Code:</label>
+    <input type="text" id="tHud" placeholder="HUD code mo">
+    <label>Sensitivity Code:</label>
+    <input type="text" id="tSensi" placeholder="Sensi code mo">
     <label>Reason:</label>
     <textarea id="tMsg" rows="3" placeholder="Bakit gusto mong sumali?"></textarea>
     <button style="width:100%;margin-top:12px" onclick="submitTryout()">📩 SUBMIT</button>
+  </div>
+</div>
+
+<div id="content-invite" class="content">
+  <div class="card">
+    <h3>🔗 INVITE FRIENDS</h3>
+    <p style="color:#888;font-size:13px;margin-bottom:10px">I-share ang link na ito para makapag-register sila sa clan.</p>
+    <div class="invite-box">
+      <p style="color:#00ff88;font-size:12px;font-weight:bold">Your Invite Link:</p>
+      <div class="invite-link" id="inviteLink">loading...</div>
+      <button style="margin-top:10px;background:#00ff88;color:#000" onclick="copyInvite()">📋 COPY LINK</button>
+    </div>
   </div>
 </div>
 
@@ -152,6 +174,8 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
     <label>Announcement:</label>
     <input type="text" id="annInput" placeholder="I-type announcement...">
     <button style="width:100%;margin-top:10px" onclick="postAnnounce()">📢 POST</button>
+    <h4>👥 ALL MEMBERS</h4>
+    <div id="memberList"></div>
   </div>
 </div>
 
@@ -160,65 +184,135 @@ label{display:block;color:#888;font-size:12px;margin:10px 0 4px}
 const socket = io();
 let isAdmin = false;
 let myName = 'Guest';
+let myRole = 'Member';
 let mediaRec, chunks = [];
 window.currentUsers = [];
 
 const savedKey = localStorage.getItem('clanx_key');
 const savedName = localStorage.getItem('clanx_name');
 const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+const savedRole = localStorage.getItem('clanx_role') || 'Member';
 
 function logout(){if(confirm('Logout ka ba?')){localStorage.clear();location.reload();}}
 
+// Check invite in URL
+const urlParams = new URLSearchParams(window.location.search);
+const inviteFrom = urlParams.get('invite');
+
 if (savedKey && savedName) {
   myName = savedName;
+  myRole = savedRole;
   socket.emit('check-key', savedKey);
   socket.on('key-result', ok => {
     if (!ok) { localStorage.clear(); location.reload(); return; }
     if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
-    else socket.emit('request-join', { username: savedName, uid: 'N/A', rank: 'Rookie', screenshot: '' });
+    else socket.emit('request-join', { username: savedName, uid: localStorage.getItem('clanx_uid')||'N/A', rank: localStorage.getItem('clanx_rank')||'Rookie', screenshot: '', type: savedRole.toLowerCase() === 'tryouter' ? 'tryouter' : 'member' });
   });
 } else {
   const key = prompt('[ClanXU] Enter Clan Key:');
+  if (!key) { location.reload(); }
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
     if (!ok) { alert('Invalid Key'); location.reload(); return; }
-    const isAdminAttempt = confirm('Are you the ADMIN?');
-    if (isAdminAttempt) {
+    const roleChoice = prompt('Piliin ang role:\n1 = ADMIN\n2 = MEMBER (full access)\n3 = TRYOUTER (limited access)', '2');
+    if (roleChoice === '1') {
       const pwd = prompt('Admin Password:');
       const name = prompt('Your IGN:');
       myName = name || 'Admin';
+      myRole = 'Admin';
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'true');
+      localStorage.setItem('clanx_role', 'Admin');
       socket.emit('admin-login', { password: pwd, username: myName });
-    } else {
-      const name = prompt('Your IGN:');
-      myName = name || 'Recruit';
+    } else if (roleChoice === '3') {
+      const name = prompt('Your IGN (Tryouter):');
+      if (!name) { location.reload(); return; }
+      myName = name;
+      myRole = 'Tryouter';
       localStorage.setItem('clanx_key', key);
       localStorage.setItem('clanx_name', myName);
       localStorage.setItem('clanx_admin', 'false');
-      socket.emit('request-join', { username: myName, uid: 'N/A', rank: 'Rookie', screenshot: '' });
+      localStorage.setItem('clanx_role', 'Tryouter');
+      socket.emit('request-join', { username: myName, uid: 'N/A', rank: 'Rookie', screenshot: '', type: 'tryouter' });
+    } else {
+      const name = prompt('Your IGN (Member):');
+      if (!name) { location.reload(); return; }
+      myName = name;
+      myRole = 'Member';
+      localStorage.setItem('clanx_key', key);
+      localStorage.setItem('clanx_name', myName);
+      localStorage.setItem('clanx_admin', 'false');
+      localStorage.setItem('clanx_role', 'Member');
+      socket.emit('request-join', { username: myName, uid: 'N/A', rank: 'Rookie', screenshot: '', type: 'member', invitedBy: inviteFrom });
     }
   });
 }
 
-socket.on('admin-login-fail', m => { alert(m); location.reload(); });
+// ============ ROLE RESULT ============
+socket.on('role-result', (data) => {
+  myRole = data.role;
+  localStorage.setItem('clanx_role', data.role);
+  applyRoleUI();
+  if (data.user) fillProfileFields(data.user);
+});
+
 socket.on('admin-approved', () => {
   isAdmin = true;
+  myRole = 'Admin';
+  localStorage.setItem('clanx_role', 'Admin');
   document.body.classList.add('admin-on');
-  document.getElementById('adminTab').style.display = 'block';
-  document.getElementById('mailboxTab').style.display = 'block';
+  applyRoleUI();
   socket.emit('get-mailbox');
 });
+
+function applyRoleUI() {
+  const tabRanking = document.getElementById('tabRanking');
+  const tabInvite = document.getElementById('tabInvite');
+  const tabMailbox = document.getElementById('tabMailbox');
+  const tabAdmin = document.getElementById('tabAdmin');
+
+  if (myRole === 'Tryouter') {
+    // Tryouter: only Chat, Profile, Tryout
+    if (tabRanking) tabRanking.style.display = 'none';
+    if (tabInvite) tabInvite.style.display = 'none';
+    if (tabMailbox) tabMailbox.style.display = 'none';
+    if (tabAdmin) tabAdmin.style.display = 'none';
+  } else if (myRole === 'Admin') {
+    if (tabRanking) tabRanking.style.display = 'block';
+    if (tabInvite) tabInvite.style.display = 'block';
+    if (tabMailbox) tabMailbox.style.display = 'block';
+    if (tabAdmin) tabAdmin.style.display = 'block';
+  } else {
+    // Member
+    if (tabRanking) tabRanking.style.display = 'block';
+    if (tabInvite) tabInvite.style.display = 'block';
+    if (tabMailbox) tabMailbox.style.display = 'none';
+    if (tabAdmin) tabAdmin.style.display = 'none';
+  }
+  // Update badge
+  const badge = document.getElementById('myBadge');
+  if (badge) {
+    badge.textContent = myRole;
+    badge.className = 'badge-role role-' + myRole;
+  }
+}
+
+socket.on('admin-login-fail', m => { alert(m); location.reload(); });
 socket.on('wait-admin-approval', () => alert('Waiting for admin approval...'));
 socket.on('admin-denied', () => { alert('Admin denied.'); location.reload(); });
 socket.on('wait-approval', () => alert('Waiting for admin approval...'));
-socket.on('approved', () => alert('Welcome sa clan!'));
 socket.on('denied', () => { alert('Denied.'); location.reload(); });
+socket.on('role-promoted', (u) => { if (u === myName) { myRole = 'Member'; applyRoleUI(); alert('Promoted ka na to Member!'); } });
+socket.on('user-renamed', ({oldName, newName}) => {
+  if (oldName === myName) { myName = newName; localStorage.setItem('clanx_name', newName); }
+});
+socket.on('user-kicked', (u) => { if (u === myName) { alert('Na-kick ka.'); localStorage.clear(); location.reload(); } });
 
-socket.on('new-user-request', d => { if (isAdmin) socket.emit('get-mailbox'); });
-socket.on('new-admin-request', d => { if (isAdmin) socket.emit('get-mailbox'); });
+socket.on('new-user-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
+socket.on('new-admin-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 
+// ============ CHAT ============
 function sendMsg() {
   const v = document.getElementById('msgInput').value.trim();
   if (!v) return;
@@ -269,34 +363,81 @@ function postAnnounce(){
   if(v){socket.emit('announce',v); document.getElementById('annInput').value='';}
 }
 
+// ============ PROFILE ============
 function saveProfile(){
   socket.emit('save-profile',{
     username: myName,
     uid: document.getElementById('pUid').value,
     rank: document.getElementById('pRank').value,
-    role: document.getElementById('pRole').value,
+    hudcode: document.getElementById('pHud').value,
+    sensicode: document.getElementById('pSensi').value,
     screenshot: document.getElementById('pShot').value
   });
 }
 socket.on('profile-saved', ()=>alert('Profile saved!'));
 
+function fillProfileFields(u) {
+  if (!u) return;
+  document.getElementById('myIGN').textContent = myName;
+  document.getElementById('pUid').value = u.uid || '';
+  document.getElementById('pRank').value = u.rank || 'Rookie';
+  document.getElementById('pHud').value = u.hudcode || '';
+  document.getElementById('pSensi').value = u.sensicode || '';
+  document.getElementById('pShot').value = u.screenshot || '';
+  const badge = document.getElementById('myBadge');
+  badge.textContent = myRole;
+  badge.className = 'badge-role role-' + myRole;
+}
+
+// ============ LEADERBOARD ============
 socket.on('users-update', users=>{
   window.currentUsers = users;
   const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
   const sorted = [...users].sort((a,b)=>order.indexOf(a.rank)-order.indexOf(b.rank));
   const lb = document.getElementById('leaderboard');
-  if(sorted.length===0){lb.innerHTML='<p style="color:#666">Walang members.</p>';return;}
-  lb.innerHTML = sorted.map((u,i)=>{
-    const cls = u.rank.replace(/\s+/g,'');
-    const roleTag = u.role ? '<span class="role-tag">'+u.role+'</span>' : '';
-    return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')"><span>#'+(i+1)+' <strong>'+escapeHtml(u.username)+'</strong>'+roleTag+'</span><span class="tier '+cls+'">'+u.rank+'</span></div>';
-  }).join('');
+  if(sorted.length===0){lb.innerHTML='<p style="color:#666">Walang members.</p>';}
+  else {
+    lb.innerHTML = sorted.map((u,i)=>{
+      const cls = (u.rank||'Rookie').replace(/\s+/g,'');
+      const roleCls = 'role-' + (u.role || 'Member');
+      return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')"><span>#'+(i+1)+' <strong>'+escapeHtml(u.username)+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span><span class="tier '+cls+'">'+u.rank+'</span></div>';
+    }).join('');
+  }
   const me = users.find(u=>u.username===myName);
-  if(me){
-    const el = document.getElementById('myIGN'); if(el) el.textContent = myName;
-    const rk = document.getElementById('myRank'); if(rk) rk.textContent = me.rank||'';
+  if(me) fillProfileFields(me);
+
+  // Member list in Admin
+  const ml = document.getElementById('memberList');
+  if (ml && isAdmin) {
+    ml.innerHTML = users.map(u => {
+      const roleCls = 'role-' + (u.role || 'Member');
+      return '<div style="background:#1a1a1a;padding:10px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">' +
+        '<span><strong style="color:#ffd700">'+escapeHtml(u.username)+'</strong> <span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>' +
+        '<span>' +
+        '<button onclick="renameUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#00adb5">✏ Rename</button> ' +
+        (u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#00ff88;color:#000">⬆ Promote</button> ' : '') +
+        '<button onclick="kickUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 8px;font-size:10px;background:#ff2a2a">✕ Kick</button>' +
+        '</span></div>';
+    }).join('');
   }
 });
+
+function renameUser(oldName) {
+  const newName = prompt('Bagong pangalan para kay ' + oldName + ':', oldName);
+  if (newName && newName !== oldName) {
+    socket.emit('rename-user', { oldName, newName });
+  }
+}
+function promoteUser(username) {
+  if (confirm('I-promote si ' + username + ' to Member?')) {
+    socket.emit('promote-tryouter', username);
+  }
+}
+function kickUser(username) {
+  if (confirm('I-kick si ' + username + '?')) {
+    socket.emit('kick-user', username);
+  }
+}
 
 function showMemberInfo(username){
   const u = window.currentUsers.find(x=>x.username===username);
@@ -306,27 +447,32 @@ function showMemberInfo(username){
   modal.id='memberModal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.onclick=e=>{if(e.target===modal) modal.remove();};
+  const roleCls = 'role-' + (u.role || 'Member');
   modal.innerHTML='<div style="background:#111;border:2px solid #ff2a2a;border-radius:10px;padding:20px;max-width:400px;width:100%;max-height:85vh;overflow-y:auto">'+
-    '<div style="text-align:center;margin-bottom:15px"><h2 style="color:#ffd700;margin:0">'+escapeHtml(u.username)+'</h2><p style="color:#00adb5;font-size:14px;margin-top:5px">'+u.rank+'</p></div>'+
+    '<div style="text-align:center;margin-bottom:15px"><h2 style="color:#ffd700;margin:0">'+escapeHtml(u.username)+'</h2><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span><p style="color:#00adb5;font-size:14px;margin-top:8px">'+u.rank+'</p></div>'+
     '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">UID</p><p style="color:#fff;font-size:14px;font-weight:bold">'+escapeHtml(u.uid||'N/A')+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">RANK</p><p style="color:#fff;font-size:14px;font-weight:bold">'+escapeHtml(u.rank||'N/A')+'</p></div>'+
-    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">ROLE</p><p style="color:#00adb5;font-size:14px;font-weight:bold">'+escapeHtml(u.role||'N/A')+'</p></div>'+
+    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">HUD CODE</p><p style="color:#fff;font-size:13px;word-break:break-all">'+escapeHtml(u.hudcode||'N/A')+'</p></div>'+
+    '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px">SENSI CODE</p><p style="color:#fff;font-size:13px;word-break:break-all">'+escapeHtml(u.sensicode||'N/A')+'</p></div>'+
     '<div style="background:#1a1a1a;border-radius:6px;padding:12px;margin-bottom:10px"><p style="color:#888;font-size:11px;margin-bottom:8px">SCREENSHOT</p>'+(u.screenshot?'<img src="'+u.screenshot+'" style="width:100%;border-radius:6px;border:2px solid #ff2a2a">':'<p style="color:#666;font-size:12px">Walang screenshot.</p>')+'</div>'+
     '<button onclick="document.getElementById(\'memberModal\').remove()" style="width:100%;margin-top:10px">CLOSE</button></div>';
   document.body.appendChild(modal);
 }
 
+// ============ TRYOUT ============
 function submitTryout(){
   socket.emit('submit-tryout',{
     username: document.getElementById('tUser').value,
     uid: document.getElementById('tUid').value,
     rank: document.getElementById('tRank').value,
     role: document.getElementById('tRole').value,
+    hudcode: document.getElementById('tHud').value,
+    sensicode: document.getElementById('tSensi').value,
     message: document.getElementById('tMsg').value
   });
 }
 socket.on('tryout-submitted', ()=>alert('Tryout submitted!'));
 
+// ============ MAILBOX ============
 socket.on('mailbox-data', d=>{if(isAdmin) renderMailbox(d);});
 socket.on('mailbox-refresh', d=>{if(isAdmin) renderMailbox(d);});
 
@@ -340,9 +486,12 @@ function renderMailbox(data){
   j.innerHTML = data.joins.length===0 ? '<p style="color:#666">Walang request.</p>' :
     data.joins.map(r=>{
       const cls = (r.rank||'Rookie').replace(/\s+/g,'');
-      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="color:#ffd700">'+r.username+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div><p style="color:#888;font-size:12px;margin:6px 0">UID: '+(r.uid||'N/A')+'</p><p style="color:#666;font-size:11px">'+r.time+'</p>'+
-      (r.screenshot?'<img src="'+r.screenshot+'" style="max-width:100%;border-radius:6px;margin:8px 0;border:2px solid #ff2a2a">':'')+
-      '<button onclick="socket.emit(\'approve-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>';
+      const typeLabel = r.type === 'tryouter' ? '<span class="role-tag role-Tryouter">TRYOUTER</span>' : '<span class="role-tag role-Member">MEMBER</span>';
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center"><strong style="color:#ffd700">'+escapeHtml(r.username)+'</strong>'+typeLabel+'</div><p style="color:#888;font-size:12px;margin:6px 0">UID: '+(r.uid||'N/A')+' · Rank: <span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></p>'+
+      (r.hudcode?'<p style="color:#888;font-size:12px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
+      (r.sensicode?'<p style="color:#888;font-size:12px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
+      (r.invitedBy?'<p style="color:#666;font-size:11px">Invited by: '+escapeHtml(r.invitedBy)+'</p>':'')+
+      '<button onclick="socket.emit(\'approve-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;margin-top:8px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-user\',\''+r.id+'\')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>';
     }).join('');
 
   const a = document.getElementById('mailAdminList');
@@ -353,34 +502,49 @@ function renderMailbox(data){
   t.innerHTML = data.tryouts.length===0 ? '<p style="color:#666">Walang try-out.</p>' :
     data.tryouts.map(r=>{
       const cls = (r.rank||'Rookie').replace(/\s+/g,'');
-      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="color:#ffd700">'+r.username+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div>'+
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="color:#ffd700">'+escapeHtml(r.username)+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div>'+
         '<p style="color:#888;font-size:12px;margin:4px 0">UID: '+(r.uid||'N/A')+'</p>'+
         '<p style="color:#888;font-size:12px;margin:4px 0">Role: <strong style="color:#00adb5">'+(r.role||'N/A')+'</strong></p>'+
+        (r.hudcode?'<p style="color:#888;font-size:12px">HUD: '+escapeHtml(r.hudcode)+'</p>':'')+
+        (r.sensicode?'<p style="color:#888;font-size:12px">Sensi: '+escapeHtml(r.sensicode)+'</p>':'')+
         '<p style="color:#ccc;font-size:12px;margin:6px 0">'+(r.message||'')+'</p>'+
         '<button onclick="socket.emit(\'approve-tryout\','+r.id+')" style="padding:6px 10px;font-size:10px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-tryout\','+r.id+')" style="padding:6px 10px;font-size:10px;background:#444">❌ DENY</button></div>';
     }).join('');
 }
 
+// ============ INVITE ============
+function generateInviteLink() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const link = baseUrl + '?invite=' + encodeURIComponent(myName);
+  const el = document.getElementById('inviteLink');
+  if (el) el.textContent = link;
+}
+function copyInvite() {
+  const link = document.getElementById('inviteLink').textContent;
+  navigator.clipboard.writeText(link).then(()=>alert('Copied!')).catch(()=>{
+    const range = document.createRange();
+    range.selectNode(document.getElementById('inviteLink'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    alert('Copied!');
+  });
+}
+
+// ============ TABS ============
 function switchTab(name, ev){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
   document.getElementById('content-'+name).classList.add('active');
   ev.target.classList.add('active');
-  if(name==='profile') fillProfileFields();
-}
-
-function fillProfileFields(){
-  document.getElementById('myIGN').textContent = myName;
-  const me = window.currentUsers.find(u=>u.username===myName);
-  if(me){
-    document.getElementById('myRank').textContent = me.rank||'';
-    document.getElementById('pUid').value = me.uid||'';
-    document.getElementById('pRank').value = me.rank||'Rookie';
-    document.getElementById('pRole').value = me.role||'Sniper';
-    document.getElementById('pShot').value = me.screenshot||'';
+  if (name === 'invite') generateInviteLink();
+  if (name === 'profile') {
+    const me = window.currentUsers.find(u=>u.username===myName);
+    if (me) fillProfileFields(me);
   }
 }
 
+// ============ INIT ============
 socket.on('initial-data', d=>{
   d.chat.forEach(addMsg);
   if(d.announcements[0]){
@@ -390,10 +554,9 @@ socket.on('initial-data', d=>{
   if(d.isAdmin){
     isAdmin = true;
     document.body.classList.add('admin-on');
-    document.getElementById('adminTab').style.display='block';
-    document.getElementById('mailboxTab').style.display='block';
-    if(d.mailbox) renderMailbox(d.mailbox);
   }
+  applyRoleUI();
+  socket.emit('get-initial');
 });
 
 socket.emit('get-initial');

@@ -15,53 +15,50 @@ const MAX_ADMINS = 4;
 let pendingUsers = {};
 let pendingAdmins = {};
 let admins = [];
-let users = {};
+let users = {};       // username -> user object (Member / Admin)
+let tryouters = {};   // username -> tryouter object
 let announcements = [];
 let chatHistory = [];
 let tryouts = [];
-let joinRequests = {};   // <-- IDINAGDAG
-
-const TIERS = {
-  "ClanXU Elite": 8000, "Legendary": 7000, "Grandmaster": 6000,
-  "Master": 5000, "Pro": 4000, "Elite": 3000, "Veteran": 2000, "Rookie": 1000
-};
 
 function getMailboxData() {
   return {
-    joins: Object.entries(pendingUsers).map(([id, username]) => ({ id, username, time: new Date().toLocaleString() })),
+    joins: Object.entries(pendingUsers).map(([id, d]) => ({ id, ...d, time: new Date().toLocaleString() })),
     admins: Object.entries(pendingAdmins).map(([id, username]) => ({ id, username, time: new Date().toLocaleString() })),
     tryouts: tryouts
   };
 }
 
+function allUsers() {
+  return [...Object.values(users), ...Object.values(tryouters)];
+}
+
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
 
+  // ============ REGISTRATION ============
   socket.on('request-join', (data) => {
-    const uname = data.username || data;
+    const uname = data.username;
     if (!uname) return;
-    
-    // EXISTING? Auto-approve
+
+    // Existing member/tryouter auto-approve
     if (users[uname]) {
-      socket.emit('approved');
-      io.emit('users-update', Object.values(users));
+      socket.emit('role-result', { role: users[uname].role || 'Member', user: users[uname] });
       return;
     }
-    
-    // PENDING NA? Wag mag-doble
-    const alreadyPending = Object.values(joinRequests).find(r => r.username === uname);
-    if (alreadyPending) {
+    if (tryouters[uname]) {
+      socket.emit('role-result', { role: 'Tryouter', user: tryouters[uname] });
+      return;
+    }
+    // Already pending?
+    const existing = Object.values(pendingUsers).find(r => r.username === uname);
+    if (existing) {
       socket.emit('wait-approval');
       return;
     }
-    
-    // BAGO - idagdag sa queue
-    const reqData = typeof data === 'object' ? data : { username: data };
-    joinRequests[socket.id] = reqData;
-    pendingUsers[socket.id] = uname;
+    pendingUsers[socket.id] = data;
     socket.emit('wait-approval');
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
-    io.to('admin-room').emit('new-user-request', { id: socket.id, ...reqData });
   });
 
   socket.on('admin-login', (data) => {
@@ -74,16 +71,37 @@ io.on('connection', (socket) => {
     makeAdmin(socket, data.username);
   });
 
+  // Approve registration
   socket.on('approve-user', (id) => {
     if (!admins.includes(socket.id)) return;
     const t = io.sockets.sockets.get(id);
-    const uname = pendingUsers[id] || 'Member';
-    if (t) {
-      if (!users[uname]) users[uname] = {};
-      users[uname] = { username: uname, rank: 'Rookie', uid: 'N/A', screenshot: '', role: 'Member' };
-      t.emit('approved');
+    const req = pendingUsers[id];
+    if (t && req) {
+      if (req.type === 'tryouter') {
+        tryouters[req.username] = {
+          username: req.username,
+          uid: req.uid || 'N/A',
+          rank: req.rank || 'Rookie',
+          hudcode: req.hudcode || '',
+          sensicode: req.sensicode || '',
+          screenshot: req.screenshot || '',
+          role: 'Tryouter'
+        };
+        t.emit('role-result', { role: 'Tryouter', user: tryouters[req.username] });
+      } else {
+        users[req.username] = {
+          username: req.username,
+          uid: req.uid || 'N/A',
+          rank: req.rank || 'Rookie',
+          hudcode: req.hudcode || '',
+          sensicode: req.sensicode || '',
+          screenshot: req.screenshot || '',
+          role: 'Member'
+        };
+        t.emit('role-result', { role: 'Member', user: users[req.username] });
+      }
       delete pendingUsers[id];
-      io.emit('users-update', Object.values(users));
+      io.emit('users-update', allUsers());
       io.to('admin-room').emit('mailbox-refresh', getMailboxData());
     }
   });
@@ -112,19 +130,61 @@ io.on('connection', (socket) => {
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
   });
 
-  socket.on('save-profile', (data) => {
-    const uname = data.username;
-    if (!uname) return socket.emit('profile-saved');
-    if (!users[uname]) users[uname] = { username: uname, rank: 'Rookie', uid: 'N/A', screenshot: '', role: 'Member' };
-    if (data.uid) users[uname].uid = data.uid;
-    if (data.rank) users[uname].rank = data.rank;
-    if (data.screenshot) users[uname].screenshot = data.screenshot;
-    socket.emit('profile-saved');
-    io.emit('users-update', Object.values(users));
+  // ============ ADMIN ACTIONS ============
+  socket.on('promote-tryouter', (username) => {
+    if (!admins.includes(socket.id)) return;
+    if (tryouters[username]) {
+      users[username] = { ...tryouters[username], role: 'Member' };
+      delete tryouters[username];
+      io.emit('users-update', allUsers());
+      io.emit('role-promoted', username);
+    }
   });
 
+  socket.on('rename-user', ({ oldName, newName }) => {
+    if (!admins.includes(socket.id)) return;
+    if (!newName || !oldName || newName === oldName) return;
+    if (users[oldName]) {
+      users[newName] = { ...users[oldName], username: newName };
+      delete users[oldName];
+    } else if (tryouters[oldName]) {
+      tryouters[newName] = { ...tryouters[oldName], username: newName };
+      delete tryouters[oldName];
+    } else return;
+    io.emit('users-update', allUsers());
+    io.emit('user-renamed', { oldName, newName });
+  });
+
+  socket.on('kick-user', (username) => {
+    if (!admins.includes(socket.id)) return;
+    delete users[username];
+    delete tryouters[username];
+    io.emit('users-update', allUsers());
+    io.emit('user-kicked', username);
+  });
+
+  // ============ PROFILE ============
+  socket.on('save-profile', (data) => {
+    const uname = data.username;
+    if (!uname) return;
+    const t = users[uname] || tryouters[uname];
+    if (!t) return;
+    if (data.uid) t.uid = data.uid;
+    if (data.rank) t.rank = data.rank;
+    if (data.screenshot !== undefined) t.screenshot = data.screenshot;
+    if (data.hudcode !== undefined) t.hudcode = data.hudcode;
+    if (data.sensicode !== undefined) t.sensicode = data.sensicode;
+    socket.emit('profile-saved');
+    io.emit('users-update', allUsers());
+  });
+
+  // ============ CHAT ============
   socket.on('chat-message', (data) => {
-    const msg = { id: Date.now() + '-' + Math.random().toString(36).substr(2, 6), user: data.user, text: data.text, type: data.type || 'text', time: new Date().toLocaleTimeString() };
+    const msg = {
+      id: Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+      user: data.user, text: data.text, type: data.type || 'text',
+      time: new Date().toLocaleTimeString()
+    };
     chatHistory.push(msg);
     if (chatHistory.length > 200) chatHistory.shift();
     io.emit('chat-message', msg);
@@ -143,6 +203,7 @@ io.on('connection', (socket) => {
     io.emit('announcement', a);
   });
 
+  // ============ TRYOUT ============
   socket.on('submit-tryout', (data) => {
     const t = { id: Date.now(), ...data, time: new Date().toLocaleString() };
     tryouts.unshift(t);
@@ -164,6 +225,7 @@ io.on('connection', (socket) => {
     io.to('admin-room').emit('mailbox-refresh', getMailboxData());
   });
 
+  // ============ INIT ============
   socket.on('get-mailbox', () => {
     if (!admins.includes(socket.id)) return;
     socket.emit('mailbox-data', getMailboxData());
@@ -172,7 +234,7 @@ io.on('connection', (socket) => {
   socket.on('get-initial', () => {
     socket.emit('initial-data', {
       chat: chatHistory,
-      users: Object.values(users),
+      users: allUsers(),
       announcements: announcements,
       isAdmin: admins.includes(socket.id),
       mailbox: admins.includes(socket.id) ? getMailboxData() : { joins: [], admins: [], tryouts: [] }
@@ -182,7 +244,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     admins = admins.filter(id => id !== socket.id);
     delete pendingUsers[socket.id];
-    io.emit('users-update', Object.values(users));
   });
 });
 
@@ -190,12 +251,12 @@ function makeAdmin(socket, username) {
   if (!admins.includes(socket.id)) admins.push(socket.id);
   socket.join('admin-room');
   const uname = username || 'Admin';
-  if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin' };
+  if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin', hudcode: '', sensicode: '' };
   users[uname].rank = 'ClanXU Elite';
   users[uname].role = 'Admin';
   socket.emit('admin-approved');
   socket.emit('mailbox-data', getMailboxData());
-  io.emit('users-update', Object.values(users));
+  io.emit('users-update', allUsers());
 }
 
 const PORT = process.env.PORT || 3000;
