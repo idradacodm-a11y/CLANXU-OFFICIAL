@@ -182,10 +182,30 @@ if (savedKey && savedName) {
     else socket.emit('request-join', savedName);
   });
 } else {
+  const savedKey = localStorage.getItem('clanx_key');
+const savedName = localStorage.getItem('clanx_name');
+const savedAdmin = localStorage.getItem('clanx_admin') === 'true';
+
+function logout() {
+  if (confirm('Logout ka ba?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+if (savedKey && savedName) {
+  myName = savedName;
+  socket.emit('check-key', savedKey);
+  socket.on('key-result', ok => {
+    if (!ok) { localStorage.clear(); location.reload(); return; }
+    if (savedAdmin) socket.emit('admin-login', { password: 'CLANXU2026', username: savedName });
+    else socket.emit('request-join', savedName);
+  });
+} else {
   const key = prompt('[ClanXU] Enter Clan Key:');
   socket.emit('check-key', key);
   socket.on('key-result', ok => {
-    if (!ok) { alert('❌ Invalid Key'); location.reload(); return; }
+    if (!ok) { alert('Invalid Key'); location.reload(); return; }
     const isAdminAttempt = confirm('Are you the ADMIN?');
     if (isAdminAttempt) {
       const pwd = prompt('Admin Password:');
@@ -205,14 +225,6 @@ if (savedKey && savedName) {
     }
   });
 }
-
-socket.on('admin-login-fail', m => { alert(m); location.reload(); });
-socket.on('admin-approved', () => {
-  isAdmin = true;
-  document.body.classList.add('admin-on');
-  document.getElementById('adminTab').style.display = 'block';
-  alert('✅ Welcome Admin!');
-});
 socket.on('wait-admin-approval', () => alert('Naghihintay ng approval mula sa existing admin.'));
 socket.on('admin-denied', () => { alert('Denied ang admin request mo.'); location.reload(); });
 
