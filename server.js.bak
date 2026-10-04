@@ -57,6 +57,7 @@ function makeAdmin(socket, username) {
   io.emit('users-update', allUsers());
 }
 
+-
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
 

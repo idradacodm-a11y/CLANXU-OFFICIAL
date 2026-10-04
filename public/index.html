@@ -33,7 +33,7 @@
   <div id="announcement"></div>
   <div id="chat"></div>
   <div class="controls">
-    <input type="text" id="msgInput" placeholder="MESSAGE..." onkeypress="if(event.key==='Enter')sendMsg()">
+    <input type="text" id="msgInput" placeholder="MESSAGE...">
     <button onclick="sendMsg()">SEND</button>
     <button class="record-btn" id="recBtn">●</button>
   </div>
@@ -267,11 +267,16 @@ socket.on('user-kicked', (u) => { if (u === myName) { alert('KICKED.'); localSto
 socket.on('new-user-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 socket.on('new-admin-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 
+let sendingMsg = false;
 function sendMsg() {
-  const v = document.getElementById('msgInput').value.trim();
+  if (sendingMsg) return;
+  const input = document.getElementById('msgInput');
+  const v = input.value.trim();
   if (!v) return;
+  sendingMsg = true;
+  input.value = '';
   socket.emit('chat-message', { user: myName, text: v });
-  document.getElementById('msgInput').value = '';
+  setTimeout(() => { sendingMsg = false; }, 1000);
 }
 socket.on('chat-message', m => addMsg(m));
 socket.on('message-deleted', id => { const e = document.getElementById('m-'+id); if(e) e.remove(); });
@@ -286,6 +291,13 @@ function addMsg(m){
 }
 function delMsg(id){socket.emit('delete-message',id);}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+document.getElementById('msgInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMsg();
+  }
+});
 
 const recBtn = document.getElementById('recBtn');
 recBtn.onmousedown = recBtn.ontouchstart = startRec;

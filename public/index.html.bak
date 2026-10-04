@@ -33,7 +33,7 @@
   <div id="announcement"></div>
   <div id="chat"></div>
   <div class="controls">
-    <input type="text" id="msgInput" placeholder="MESSAGE..." onkeypress="if(event.key==='Enter')sendMsg()">
+    <input type="text" id="msgInput" placeholder="MESSAGE...">
     <button onclick="sendMsg()">SEND</button>
     <button class="record-btn" id="recBtn">●</button>
   </div>
@@ -72,11 +72,12 @@
     <input type="text" id="pHud" placeholder="HUD layout code">
     <label>SENSITIVITY CODE</label>
     <input type="text" id="pSensi" placeholder="Sensi code">
-    <label>COLLECTION SCREENSHOT (Imgur link)</label>
-    <input type="text" id="pShot" placeholder="https://i.imgur.com/...">
-    <button class="btn-gold" style="width:100%;margin-top:16px" onclick="saveProfile()">💾 SAVE PROFILE</button>
-  </div>
-</div>
+    <label>UPLOAD PROFILE PICTURE (from phone)</label>
+<input type="file" id="pFile" accept="image/*" style="padding:8px;background:var(--bg2);border:1px solid var(--line);color:#fff;border-radius:2px;width:100%;font-size:12px">
+<label>UPLOAD COLLECTION SCREENSHOT (from phone)</label>
+<input type="file" id="cFile" accept="image/*" style="padding:8px;background:var(--bg2);border:1px solid var(--line);color:#fff;border-radius:2px;width:100%;font-size:12px">
+<label>OR PASTE IMGUR LINK</label>
+<input type="text" id="pShot" placeholder="https://i.imgur.com/...">
 
 <div id="content-tryout" class="content">
   <div class="hero">
@@ -266,11 +267,16 @@ socket.on('user-kicked', (u) => { if (u === myName) { alert('KICKED.'); localSto
 socket.on('new-user-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 socket.on('new-admin-request', () => { if (isAdmin) socket.emit('get-mailbox'); });
 
+let sendingMsg = false;
 function sendMsg() {
-  const v = document.getElementById('msgInput').value.trim();
+  if (sendingMsg) return;
+  const input = document.getElementById('msgInput');
+  const v = input.value.trim();
   if (!v) return;
+  sendingMsg = true;
+  input.value = '';
   socket.emit('chat-message', { user: myName, text: v });
-  document.getElementById('msgInput').value = '';
+  setTimeout(() => { sendingMsg = false; }, 1000);
 }
 socket.on('chat-message', m => addMsg(m));
 socket.on('message-deleted', id => { const e = document.getElementById('m-'+id); if(e) e.remove(); });

@@ -179,15 +179,20 @@ io.on('connection', (socket) => {
     io.emit('users-update', allUsers());
   });
 
+  let recentMessages = {};
   socket.on('chat-message', (data) => {
-    const msg = {
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-      user: data.user, text: data.text, type: data.type || 'text',
-      time: new Date().toLocaleTimeString()
-    };
-    chatHistory.push(msg);
-    if (chatHistory.length > 200) chatHistory.shift();
-    io.emit('chat-message', msg);
+    try {
+      if (!data || !data.text || !data.user) return;
+      const now = Date.now();
+      const key = data.user + '|' + data.text;
+      if (recentMessages[key] && (now - recentMessages[key]) < 1500) return;
+      recentMessages[key] = now;
+      if (Object.keys(recentMessages).length > 500) recentMessages = {};
+      const msg = { id: now + '-' + Math.random().toString(36).substr(2, 6), user: data.user, text: data.text, type: data.type || 'text', time: new Date().toLocaleTimeString() };
+      chatHistory.push(msg);
+      if (chatHistory.length > 200) chatHistory.shift();
+      io.emit('chat-message', msg);
+    } catch (e) {}
   });
 
   socket.on('delete-message', (id) => {
