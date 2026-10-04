@@ -275,13 +275,23 @@ function sendMsg() {
   if (!v) return;
   sendingMsg = true;
   input.value = '';
-  socket.emit('chat-message', { user: myName, text: v });
-  setTimeout(() => { sendingMsg = false; }, 1000);
+  const msgId = myName + '|' + Date.now() + '|' + Math.random().toString(36).substr(2, 6);
+  socket.emit('chat-message', { user: myName, text: v, msgId: msgId });
+  setTimeout(() => { sendingMsg = false; }, 1200);
 }
 socket.on('chat-message', m => addMsg(m));
 socket.on('message-deleted', id => { const e = document.getElementById('m-'+id); if(e) e.remove(); });
 
+const displayedMsgs = new Set();
 function addMsg(m){
+  if (!m || !m.id) return;
+  if (displayedMsgs.has(m.id)) return;
+  displayedMsgs.add(m.id);
+  if (displayedMsgs.size > 500) {
+    const arr = Array.from(displayedMsgs);
+    displayedMsgs.clear();
+    arr.slice(-200).forEach(id => displayedMsgs.add(id));
+  }
   const c = document.getElementById('chat');
   const d = document.createElement('div');
   d.className='msg'; d.id='m-'+m.id;

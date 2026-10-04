@@ -275,8 +275,9 @@ function sendMsg() {
   if (!v) return;
   sendingMsg = true;
   input.value = '';
-  socket.emit('chat-message', { user: myName, text: v });
-  setTimeout(() => { sendingMsg = false; }, 1000);
+  const msgId = myName + '|' + Date.now() + '|' + Math.random().toString(36).substr(2, 6);
+  socket.emit('chat-message', { user: myName, text: v, msgId: msgId });
+  setTimeout(() => { sendingMsg = false; }, 1200);
 }
 socket.on('chat-message', m => addMsg(m));
 socket.on('message-deleted', id => { const e = document.getElementById('m-'+id); if(e) e.remove(); });
@@ -291,6 +292,13 @@ function addMsg(m){
 }
 function delMsg(id){socket.emit('delete-message',id);}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+document.getElementById('msgInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMsg();
+  }
+});
 
 const recBtn = document.getElementById('recBtn');
 recBtn.onmousedown = recBtn.ontouchstart = startRec;
