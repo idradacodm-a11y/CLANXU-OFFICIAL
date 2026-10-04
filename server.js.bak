@@ -30,7 +30,10 @@ function getMailboxData() {
 }
 
 function allUsers() {
-  return [...Object.values(users), ...Object.values(tryouters)];
+  try {
+    const arr = [...Object.values(users), ...Object.values(tryouters)];
+    return arr;
+  } catch (e) { return []; }
 }
 
 function getMailboxData() {
@@ -42,11 +45,15 @@ function getMailboxData() {
 }
 
 function allUsers() {
-  return [...Object.values(users), ...Object.values(tryouters)];
+  try {
+    const arr = [...Object.values(users), ...Object.values(tryouters)];
+    return arr;
+  } catch (e) { return []; }
 }
 
 function makeAdmin(socket, username) {
   if (!admins.includes(socket.id)) admins.push(socket.id);
+  if (socket.join) socket.join('admin-room');
   if (socket.join) socket.join('admin-room');
   const uname = username || 'Admin';
   if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin', hudcode: '', sensicode: '', avatar: '' };
@@ -102,11 +109,13 @@ io.on('connection', (socket) => {
         };
         t.emit('role-result', { role: 'Member', user: users[req.username] });
       }
-      delete pendingUsers[id];
-      io.emit('users-update', allUsers());
-      io.to('admin-room').emit('mailbox-refresh', getMailboxData());
-    }
-  });
+      io.emit('chat-message', {
+  id: Date.now() + '-welcome',
+  user: 'SYSTEM',
+  text: '⚔ ONE NAME. ONE FORCE. WELCOME TO THE FAMILY THAT NEVER RETREATS. — ' + req.username + ' ⚔',
+  type: 'text',
+  time: new Date().toLocaleTimeString()
+});
 
   socket.on('deny-user', (id) => {
     if (!admins.includes(socket.id)) return;

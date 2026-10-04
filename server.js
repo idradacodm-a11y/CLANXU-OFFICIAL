@@ -30,7 +30,10 @@ function getMailboxData() {
 }
 
 function allUsers() {
-  return [...Object.values(users), ...Object.values(tryouters)];
+  try {
+    const arr = [...Object.values(users), ...Object.values(tryouters)];
+    return arr;
+  } catch (e) { return []; }
 }
 
 function getMailboxData() {
@@ -42,7 +45,10 @@ function getMailboxData() {
 }
 
 function allUsers() {
-  return [...Object.values(users), ...Object.values(tryouters)];
+  try {
+    const arr = [...Object.values(users), ...Object.values(tryouters)];
+    return arr;
+  } catch (e) { return []; }
 }
 
 function makeAdmin(socket, username) {
@@ -88,6 +94,13 @@ io.on('connection', (socket) => {
     const t = io.sockets.sockets.get(id);
     const req = pendingUsers[id];
     if (t && req) {
+    io.emit('chat-message', {
+  id: Date.now() + '-welcome',
+  user: 'SYSTEM',
+  text: '⚔ ONE NAME. ONE FORCE. WELCOME TO THE FAMILY THAT NEVER RETREATS. — ' + req.username + ' ⚔',
+  type: 'text',
+  time: new Date().toLocaleTimeString()
+});
       if (req.type === 'tryouter') {
         tryouters[req.username] = {
           username: req.username, uid: req.uid || 'N/A', rank: req.rank || 'Rookie',
@@ -103,11 +116,13 @@ io.on('connection', (socket) => {
         };
         t.emit('role-result', { role: 'Member', user: users[req.username] });
       }
-      delete pendingUsers[id];
-      io.emit('users-update', allUsers());
-      io.to('admin-room').emit('mailbox-refresh', getMailboxData());
-    }
-  });
+      io.emit('chat-message', {
+  id: Date.now() + '-welcome',
+  user: 'SYSTEM',
+  text: '⚔ ONE NAME. ONE FORCE. WELCOME TO THE FAMILY THAT NEVER RETREATS. — ' + req.username + ' ⚔',
+  type: 'text',
+  time: new Date().toLocaleTimeString()
+});
 
   socket.on('deny-user', (id) => {
     if (!admins.includes(socket.id)) return;
