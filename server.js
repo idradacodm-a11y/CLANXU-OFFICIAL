@@ -48,6 +48,7 @@ function allUsers() {
 function makeAdmin(socket, username) {
   if (!admins.includes(socket.id)) admins.push(socket.id);
   if (socket.join) socket.join('admin-room');
+  if (socket.join) socket.join('admin-room');
   const uname = username || 'Admin';
   if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin', hudcode: '', sensicode: '', avatar: '' };
   users[uname].rank = 'ClanXU Elite';

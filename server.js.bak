@@ -60,7 +60,6 @@ function makeAdmin(socket, username) {
 -
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
-
   socket.on('request-join', (data) => {
     const uname = data.username;
     if (!uname) return;
@@ -183,12 +182,12 @@ io.on('connection', (socket) => {
   socket.on('chat-message', (data) => {
     try {
       if (!data || !data.text || !data.user) return;
-      const now = Date.now();
-      const key = data.user + '|' + data.text;
-      if (recentMessages[key] && (now - recentMessages[key]) < 1500) return;
-      recentMessages[key] = now;
-      if (Object.keys(recentMessages).length > 500) recentMessages = {};
-      const msg = { id: now + '-' + Math.random().toString(36).substr(2, 6), user: data.user, text: data.text, type: data.type || 'text', time: new Date().toLocaleTimeString() };
+      const msgId = data.msgId || (data.user + '|' + data.text + '|' + Math.floor(Date.now() / 1000));
+      if (!global.seenMsgs) global.seenMsgs = new Set();
+      if (global.seenMsgs.has(msgId)) return;
+      global.seenMsgs.add(msgId);
+      if (global.seenMsgs.size > 1000) global.seenMsgs = new Set([msgId]);
+      const msg = { id: Date.now() + '-' + Math.random().toString(36).substr(2, 6), user: data.user, text: data.text, type: data.type || 'text', time: new Date().toLocaleTimeString() };
       chatHistory.push(msg);
       if (chatHistory.length > 200) chatHistory.shift();
       io.emit('chat-message', msg);
