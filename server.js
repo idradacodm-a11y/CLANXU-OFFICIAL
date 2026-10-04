@@ -33,6 +33,31 @@ function allUsers() {
   return [...Object.values(users), ...Object.values(tryouters)];
 }
 
+function getMailboxData() {
+  return {
+    joins: Object.entries(pendingUsers).map(([id, d]) => ({ id, ...d, time: new Date().toLocaleString() })),
+    admins: Object.entries(pendingAdmins).map(([id, username]) => ({ id, username, time: new Date().toLocaleString() })),
+    tryouts: tryouts
+  };
+}
+
+function allUsers() {
+  return [...Object.values(users), ...Object.values(tryouters)];
+}
+
+function makeAdmin(socket, username) {
+  if (!admins.includes(socket.id)) admins.push(socket.id);
+  if (socket.join) socket.join('admin-room');
+  const uname = username || 'Admin';
+  if (!users[uname]) users[uname] = { username: uname, rank: 'ClanXU Elite', uid: 'N/A', screenshot: '', role: 'Admin', hudcode: '', sensicode: '', avatar: '' };
+  users[uname].rank = 'ClanXU Elite';
+  users[uname].role = 'Admin';
+  socket.emit('admin-approved');
+  socket.emit('mailbox-data', getMailboxData());
+  io.emit('users-update', allUsers());
+}
+
+-
 io.on('connection', (socket) => {
   socket.on('check-key', (key) => socket.emit('key-result', key === CLAN_KEY));
 
