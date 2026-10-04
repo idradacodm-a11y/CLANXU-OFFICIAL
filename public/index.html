@@ -293,17 +293,29 @@ function fillProfileFields(u) {
   b.textContent = myRole; b.className = 'badge-role role-' + myRole;
 }
 socket.on('users-update', users=>{
+  if (!users || !Array.isArray(users)) return;
   window.currentUsers = users;
   const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
-  const sorted = [...users].sort((a,b)=>order.indexOf(a.rank)-order.indexOf(b.rank));
+  const sorted = [...users].sort((a,b)=>{
+    const ai = order.indexOf(a.rank); const bi = order.indexOf(b.rank);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
   const lb = document.getElementById('leaderboard');
-  if(sorted.length===0){ lb.innerHTML='<p class="empty">// no warriors yet</p>'; }
-  else {
-    lb.innerHTML = sorted.map((u,i)=>{
-      const cls = (u.rank||'Rookie').replace(/\s+/g,'');
-      const roleCls = 'role-' + (u.role || 'Member');
-      return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')"><span><span class="lb-rank">#'+String(i+1).padStart(2,'0')+'</span><span class="lb-name">'+escapeHtml(u.username)+'</span><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span><span class="tier '+cls+'">'+u.rank+'</span></div>';
-    }).join('');
+  if (lb) {
+    if (sorted.length === 0) {
+      lb.innerHTML = '<p class="empty">// no warriors yet</p>';
+    } else {
+      lb.innerHTML = sorted.map((u,i)=>{
+        const cls = (u.rank || 'Rookie').replace(/\s+/g,'');
+        const roleCls = 'role-' + (u.role || 'Member');
+        const safeName = escapeHtml(u.username || 'Unknown');
+        return '<div class="lb-row" onclick="showMemberInfo(\''+safeName+'\')">'+
+          '<span><span class="lb-rank">#'+String(i+1).padStart(2,'0')+'</span>'+
+          '<span class="lb-name">'+safeName+'</span>'+
+          '<span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>'+
+          '<span class="tier '+cls+'">'+(u.rank||'Rookie')+'</span></div>';
+      }).join('');
+    }
   }
   const me = users.find(u=>u.username===myName);
   if(me) fillProfileFields(me);
@@ -311,7 +323,16 @@ socket.on('users-update', users=>{
   if (ml && isAdmin) {
     ml.innerHTML = users.map(u => {
       const roleCls = 'role-' + (u.role || 'Member');
-      return '<div style="background:var(--bg2);padding:12px;border-radius:2px;margin-bottom:6px;border-left:2px solid var(--red)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span><strong style="font-family:Orbitron;font-size:12px;color:#fff">'+escapeHtml(u.username)+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span></div><div style="display:flex;gap:5px;flex-wrap:wrap"><button onclick="renameUser(\''+escapeHtml(u.username)+'\')" class="btn-cyan" style="padding:5px 10px;font-size:9px">✏ RENAME</button>'+(u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+escapeHtml(u.username)+'\')" class="btn-green" style="padding:5px 10px;font-size:9px">⬆ PROMOTE</button>' : '')+'<button onclick="kickUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 10px;font-size:9px">✕ KICK</button></div></div>';
+      const safeName = escapeHtml(u.username || 'Unknown');
+      return '<div style="background:var(--bg2);padding:12px;border-radius:2px;margin-bottom:6px;border-left:2px solid var(--red)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">'+
+          '<span><strong style="font-family:Orbitron;font-size:12px;color:#fff">'+safeName+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span>'+
+        '</div>'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap">'+
+          '<button onclick="renameUser(\''+safeName+'\')" class="btn-cyan" style="padding:5px 10px;font-size:9px">✏ RENAME</button>'+
+          (u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+safeName+'\')" class="btn-green" style="padding:5px 10px;font-size:9px">⬆ PROMOTE</button>' : '')+
+          '<button onclick="kickUser(\''+safeName+'\')" style="padding:5px 10px;font-size:9px">✕ KICK</button>'+
+        '</div></div>';
     }).join('');
   }
 });
