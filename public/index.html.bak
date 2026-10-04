@@ -533,5 +533,181 @@ socket.on('initial-data', d=>{
 
 socket.emit('get-initial');
 </script>
+function switchTab(name, ev){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('content-'+name).classList.add('active');
+  ev.target.classList.add('active');
+  if (name === 'invite') generateInviteLink();
+  if (name === 'profile') {
+    const me = window.currentUsers.find(u=>u.username===myName);
+    if (me) fillProfileFields(me);
+  }
+}
+
+function generateInviteLink() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const link = baseUrl + '?invite=' + encodeURIComponent(myName);
+  const el = document.getElementById('inviteLink');
+  if (el) el.textContent = link;
+}
+
+function copyInvite() {
+  const link = document.getElementById('inviteLink').textContent;
+  navigator.clipboard.writeText(link).then(()=>alert('COPIED')).catch(()=>{
+    const range = document.createRange();
+    range.selectNode(document.getElementById('inviteLink'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    alert('COPIED');
+  });
+}
+
+function submitTryout(){
+  socket.emit('submit-tryout',{
+    username: document.getElementById('tUser').value,
+    uid: document.getElementById('tUid').value,
+    rank: document.getElementById('tRank').value,
+    role: document.getElementById('tRole').value,
+    hudcode: document.getElementById('tHud').value,
+    sensicode: document.getElementById('tSensi').value,
+    message: document.getElementById('tMsg').value
+  });
+}
+socket.on('tryout-submitted', ()=>alert('TRYOUT SUBMITTED'));
+
+socket.on('mailbox-data', d=>{ if(isAdmin) renderMailbox(d); });
+socket.on('mailbox-refresh', d=>{ if(isAdmin) renderMailbox(d); });
+
+function renderMailbox(data){
+  if(!data) return;
+  document.getElementById('jCount').textContent = data.joins.length;
+  document.getElementById('aCount').textContent = data.admins.length;
+  document.getElementById('tCount').textContent = data.tryouts.length;
+
+  const j = document.getElementById('mailJoinList');
+  j.innerHTML = data.joins.length===0 ? '<p class="empty">// none</p>' :
+    data.joins.map(r=>{
+      const typeLabel = r.type === 'tryouter' ? '<span class="role-tag role-Tryouter">TRYOUTER</span>' : '<span class="role-tag role-Member">MEMBER</span>';
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center"><strong>'+escapeHtml(r.username)+'</strong>'+typeLabel+'</div>'+
+      '<p style="color:var(--dim);font-size:12px;margin:6px 0">UID: '+(r.uid||'N/A')+'</p>'+
+      '<div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-user\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-user\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>';
+    }).join('');
+
+  const a = document.getElementById('mailAdminList');
+  a.innerHTML = data.admins.length===0 ? '<p class="empty">// none</p>' :
+    data.admins.map(r=>'<div class="mbox"><strong>'+r.username+'</strong><div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-admin\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-admin\',\''+r.id+'\')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>').join('');
+
+  const t = document.getElementById('mailTryoutList');
+  t.innerHTML = data.tryouts.length===0 ? '<p class="empty">// none</p>' :
+    data.tryouts.map(r=>{
+      const cls = (r.rank||'Rookie').replace(/\s+/g,'');
+      return '<div class="mbox"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong>'+escapeHtml(r.username)+'</strong><span class="tier '+cls+'">'+(r.rank||'Rookie')+'</span></div>'+
+        '<p style="color:var(--dim);font-size:12px;margin:4px 0">UID: '+(r.uid||'N/A')+'</p>'+
+        '<p style="color:var(--dim);font-size:12px;margin:4px 0">Role: <strong style="color:var(--cyan)">'+(r.role||'N/A')+'</strong></p>'+
+        '<p style="color:var(--txt);font-size:12px;margin:6px 0">'+(r.message||'')+'</p>'+
+        '<div style="margin-top:8px"><button class="btn-green" onclick="socket.emit(\'approve-tryout\','+r.id+')" style="padding:6px 12px;font-size:9px">✅ ACCEPT</button> <button onclick="socket.emit(\'deny-tryout\','+r.id+')" style="padding:6px 12px;font-size:9px;background:#333">❌ DENY</button></div></div>';
+    }).join('');
+}
+
+function postAnnounce(){
+  const v = document.getElementById('annInput').value.trim();
+  if(v){ socket.emit('announce',v); document.getElementById('annInput').value=''; }
+}
+
+socket.on('announcement', a=>{
+  const el = document.getElementById('announcement');
+  el.style.display='block'; el.textContent=a.text;
+});
+
+function fillProfileFields(u) {
+  if (!u) return;
+  document.getElementById('myIGN').textContent = myName;
+  document.getElementById('pUid').value = u.uid || '';
+  document.getElementById('pRank').value = u.rank || 'Rookie';
+  document.getElementById('pHud').value = u.hudcode || '';
+  document.getElementById('pSensi').value = u.sensicode || '';
+  document.getElementById('pShot').value = u.screenshot && u.screenshot.startsWith('http') ? u.screenshot : '';
+  const av = document.getElementById('myAvatar');
+  if (u.avatar) av.src = u.avatar;
+  else if (u.screenshot && u.screenshot.startsWith('data:')) av.src = u.screenshot;
+  else av.src = 'logo.png';
+  const b = document.getElementById('myBadge');
+  b.textContent = myRole; b.className = 'badge-role role-' + myRole;
+}
+
+function saveProfile(){
+  const pFile = document.getElementById('pFile') ? document.getElementById('pFile').files[0] : null;
+  const cFile = document.getElementById('cFile') ? document.getElementById('cFile').files[0] : null;
+  const readFile = (file) => new Promise((resolve) => {
+    if (!file) return resolve('');
+    if (file.size > 800000) { alert('Max 800KB.'); return resolve(''); }
+    const r = new FileReader();
+    r.onload = (e) => resolve(e.target.result);
+    r.readAsDataURL(file);
+  });
+  Promise.all([readFile(pFile), readFile(cFile)]).then(([av, col]) => {
+    socket.emit('save-profile', {
+      username: myName,
+      uid: document.getElementById('pUid').value,
+      rank: document.getElementById('pRank').value,
+      hudcode: document.getElementById('pHud').value,
+      sensicode: document.getElementById('pSensi').value,
+      screenshot: col || document.getElementById('pShot').value,
+      avatar: av || undefined
+    });
+  });
+}
+socket.on('profile-saved', ()=>alert('PROFILE SAVED'));
+
+socket.on('users-update', users=>{
+  window.currentUsers = users;
+  const order = ['ClanXU Elite','Legendary','Grandmaster','Master','Pro','Elite','Veteran','Rookie'];
+  const sorted = [...users].sort((a,b)=>order.indexOf(a.rank)-order.indexOf(b.rank));
+  const lb = document.getElementById('leaderboard');
+  if(sorted.length===0){ lb.innerHTML='<p class="empty">// no warriors yet</p>'; }
+  else {
+    lb.innerHTML = sorted.map((u,i)=>{
+      const cls = (u.rank||'Rookie').replace(/\s+/g,'');
+      const roleCls = 'role-' + (u.role || 'Member');
+      return '<div class="lb-row" onclick="showMemberInfo(\''+escapeHtml(u.username)+'\')"><span><span class="lb-rank">#'+String(i+1).padStart(2,'0')+'</span><span class="lb-name">'+escapeHtml(u.username)+'</span><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span><span class="tier '+cls+'">'+u.rank+'</span></div>';
+    }).join('');
+  }
+  const me = users.find(u=>u.username===myName);
+  if(me) fillProfileFields(me);
+
+  const ml = document.getElementById('memberList');
+  if (ml && isAdmin) {
+    ml.innerHTML = users.map(u => {
+      const roleCls = 'role-' + (u.role || 'Member');
+      return '<div style="background:var(--bg2);padding:12px;border-radius:2px;margin-bottom:6px;border-left:2px solid var(--red)"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span><strong style="font-family:Orbitron;font-size:12px;color:#fff">'+escapeHtml(u.username)+'</strong><span class="role-tag '+roleCls+'">'+(u.role||'Member')+'</span></span></div><div style="display:flex;gap:5px;flex-wrap:wrap"><button onclick="renameUser(\''+escapeHtml(u.username)+'\')" class="btn-cyan" style="padding:5px 10px;font-size:9px">✏ RENAME</button>'+(u.role === 'Tryouter' ? '<button onclick="promoteUser(\''+escapeHtml(u.username)+'\')" class="btn-green" style="padding:5px 10px;font-size:9px">⬆ PROMOTE</button>' : '')+'<button onclick="kickUser(\''+escapeHtml(u.username)+'\')" style="padding:5px 10px;font-size:9px">✕ KICK</button></div></div>';
+    }).join('');
+  }
+});
+
+function renameUser(oldName) {
+  const newName = prompt('Rename ' + oldName + ' to:', oldName);
+  if (newName && newName !== oldName) socket.emit('rename-user', { oldName, newName });
+}
+function promoteUser(username) {
+  if (confirm('Promote ' + username + '?')) socket.emit('promote-tryouter', username);
+}
+function kickUser(username) {
+  if (confirm('KICK ' + username + '?')) socket.emit('kick-user', username);
+}
+
+function showMemberInfo(username){
+  const u = window.currentUsers.find(x=>x.username===username);
+  if(!u) return;
+  const old = document.getElementById('memberModal'); if(old) old.remove();
+  const modal = document.createElement('div');
+  modal.id='memberModal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick=e=>{ if(e.target===modal) modal.remove(); };
+  const roleCls = 'role-' + (u.role || 'Member');
+  modal.innerHTML='<div style="background:var(--card);border:2px solid var(--red);border-radius:3px;padding:22px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;position:relative"><div style="position:absolute;top:0;left:0;width:40px;height:3px;background:var(--red)"></div><div style="position:absolute;top:0;left:0;width:3px;height:40px;background:var(--red)"></div><div style="text-align:center;margin-bottom:18px">'+(u.avatar ? '<img src="'+u.avatar+'" style="width:100px;height:100px;border-radius:3px;border:2px solid var(--red);object-fit:cover;margin-bottom:10px">' : '')+'<h2 style="color:#fff;font-family:Orbitron;font-weight:900;font-size:22px;letter-spacing:3px;margin:0">'+escapeHtml(u.username)+'</h2><span class="role-tag '+roleCls+'" style="margin-top:10px">'+(u.role||'Member')+'</span><p style="color:var(--gold);font-family:Orbitron;font-size:12px;letter-spacing:2px;margin-top:10px">'+u.rank+'</p></div><div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--red)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">UID</p><p style="color:#fff;font-size:15px;font-weight:700;margin-top:4px">'+escapeHtml(u.uid||'N/A')+'</p></div><div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--gold)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">HUD CODE</p><p style="color:#fff;font-size:13px;word-break:break-all;margin-top:4px">'+escapeHtml(u.hudcode||'N/A')+'</p></div><div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:8px;border-left:2px solid var(--cyan)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px">SENSI CODE</p><p style="color:#fff;font-size:13px;word-break:break-all;margin-top:4px">'+escapeHtml(u.sensicode||'N/A')+'</p></div><div style="background:var(--bg2);border-radius:2px;padding:12px;margin-bottom:12px;border-left:2px solid var(--line)"><p style="color:var(--dim);font-family:Orbitron;font-size:9px;letter-spacing:2px;margin-bottom:8px">COLLECTION</p>'+(u.screenshot?'<img src="'+u.screenshot+'" style="width:100%;border-radius:2px;border:2px solid var(--red)">':'<p style="color:var(--dim);font-size:12px">No collection.</p>')+'</div><button onclick="document.getElementById(\'memberModal\').remove()" style="width:100%;margin-top:6px">CLOSE</button></div>';
+  document.body.appendChild(modal);
+}
 </body>
 </html>
